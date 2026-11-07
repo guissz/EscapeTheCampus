@@ -6,8 +6,8 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
-#include <allegro5/allegro_primitives.h> // Formas primitivas
-#include <allegro5/allegro_image.h> // Imagens
+#include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_image.h>
 
 #define LARGURA_TELA 1280
 #define ALTURA_TELA 720
@@ -20,7 +20,7 @@ typedef struct {
 	int frame_atual;
 	int direcao;
 	float tamanho_frame;
-	ALLEGRO_BITMAP* spritesheet;
+	ALLEGRO_BITMAP *spritesheet;
 } Jogador;
 
 typedef struct {
@@ -160,8 +160,8 @@ int main() {
 	Jogador jogador;
 	jogador.x = 150.0f;
 	jogador.y = 300.0f;
-	jogador.largura = 48.0f;
-	jogador.altura = 48.0f;
+	jogador.largura = 96.0f;
+	jogador.altura = 96.0f;
 	jogador.velocidade_x = 0.0f;
 	jogador.velocidade_y = 0.0f;
 	jogador.tamanho_frame = 48.0f;
@@ -243,7 +243,7 @@ int main() {
 
 				if (estado_atual == ESTADO_FASE1 && evento.keyboard.keycode == ALLEGRO_KEY_E) {
 					// Interação com a ALU
-					float margem = 30.0f;
+					float margem = 20.0f;
 					float meio_x = 400.0f - margem;
 					float meio_y = 317.0f - margem;
 					float meio_largura = 400.0f + (margem * 2);
@@ -371,13 +371,14 @@ int main() {
 			// Lógica Enigma 1
 			if (estado_atual == ESTADO_ENIGMA1) {
 				float x_inicio = LARGURA_TELA / 2 - 220;
-				float y_bits = 260;
+				float y_bits = 200; // Alinhado com o novo 'y' dos blocos
 				float largura_bit = 45;
 				float altura_bit = 60;
 
 				for (int i = 0; i < 8; i++) {
 					float bit_x = x_inicio + (i * 55);
 
+					// Hitbox exata em cima da caixa do bit
 					if (mouse_x >= bit_x && mouse_x <= bit_x + largura_bit && mouse_y >= y_bits && mouse_y <= y_bits + altura_bit) {
 						alu.bits[i] = 1 - alu.bits[i];
 						alu.erro = false;
@@ -386,8 +387,9 @@ int main() {
 					}
 				}
 
+				// Hitbox exata do Botão Confirmar (y = 350, altura = 50)
 				float botao_x = LARGURA_TELA / 2 - 100;
-				float botao_y = 380;
+				float botao_y = 350;
 				float botao_largura = 200;
 				float botao_altura = 50;
 
@@ -401,16 +403,17 @@ int main() {
 
 					if (resposta_jogador == resposta_correta) {
 						hud.enigmas_resolvidos++;
-						
+
 						if (alu.tentativa_atual == 0) {
 							hud.pontuacao += 1000;
 						}
+
 						alu.resolvido = true;
 						alu.acertou = true;
 						alu.tempo_acerto = 90;
-						//estado_atual = ESTADO_FASE1;
 
-					} else {
+					}
+					else {
 						hud.pontuacao -= 500;
 						if (hud.pontuacao < 0) hud.pontuacao = 0;
 						alu.tentativa_atual = 1;
@@ -426,7 +429,7 @@ int main() {
 				float largura_slot = 100;
 				float altura_slot = 60;
 				float inicio_x = LARGURA_TELA / 2 - 230;
-				float y_slots = 280;
+				float y_slots = 210;
 
 				for (int i = 0; i < 4; i++) {
 					float slot_x = inicio_x + (i * 120);
@@ -453,14 +456,13 @@ int main() {
 				}
 
 				float botao_x = LARGURA_TELA / 2 - 100;
-				float botao_y = 380;
+				float botao_y = 340;
 				float botao_largura = 200;
 				float botao_altura = 50;
 
 				if (mouse_x >= botao_x && mouse_x <= botao_x + botao_largura &&
 					mouse_y >= botao_y && mouse_y <= botao_y + botao_altura) {
 
-					// Validação rigorosa dos slots atuais na memória
 					bool ordenado = true;
 					for (int i = 0; i < 3; i++) {
 						if (reg.slots[i] > reg.slots[i + 1]) {
@@ -491,9 +493,8 @@ int main() {
 			}
 		}
 
-		// Se o relógio marcou mais 1/60 avos de segundo
 		else if (evento.type == ALLEGRO_EVENT_TIMER) {
-			redesenhar = true; // Tela será atualizada neste frame
+			redesenhar = true;
 
 			if (estado_atual != ESTADO_MENU) {
 				contador_tempo++;
@@ -559,6 +560,7 @@ int main() {
 				}
 			}
 
+			// Fase 1
 			if (estado_atual == ESTADO_FASE1) {
 				jogador.x += jogador.velocidade_x;
 				jogador.y += jogador.velocidade_y;
@@ -574,8 +576,8 @@ int main() {
 				// Colisão ALU
 				float meio_x = 400.0f;
 				float meio_y = 317.0f;
-				float meio_largura = 400.0f;
-				float meio_altura = 145.0f;
+				float meio_largura = 385.0f;
+				float meio_altura = 146.0f;
 
 				if (jogador.x < meio_x + meio_largura && jogador.x + jogador.largura > meio_x &&
 					jogador.y < meio_y + meio_altura && jogador.y + jogador.altura > meio_y) {
@@ -583,10 +585,10 @@ int main() {
 				}
 
 				// Colisão Alocadores
-				float alocador_x = 880.0f;
+				float alocador_x = 890.0f;
 				float alocador_y = 200.0f;
-				float alocador_largura = 800.0f;
-				float alocador_altura = 150.0f;
+				float alocador_largura = 210.0f;
+				float alocador_altura = 120.0f;
 				if (jogador.x < alocador_x + alocador_largura && jogador.x + jogador.largura > alocador_x &&
 					jogador.y < alocador_y + alocador_altura && jogador.y + jogador.altura > alocador_y) {
 					colidiu = true;
@@ -594,9 +596,9 @@ int main() {
 
 				// Colisão PC
 				float pc_x = 1000.0f;
-				float pc_y = 455.0f;
-				float pc_largura = 280.0f;
-				float pc_altura = 120.0f;
+				float pc_y = 460.0f;
+				float pc_largura = 300.0f;
+				float pc_altura = 115.0f;
 				if (jogador.x < pc_x + pc_largura && jogador.x + jogador.largura > pc_x &&
 					jogador.y < pc_y + pc_altura && jogador.y + jogador.altura > pc_y) {
 					colidiu = true;
@@ -605,6 +607,17 @@ int main() {
 				// Colisão borda direita
 				if (jogador.x + jogador.largura > LARGURA_TELA) {
 					jogador.x = LARGURA_TELA - jogador.largura;
+				}
+
+				// Colisão porta
+				float porta_x = 1180.0f;
+				float porta_y = 200.0f;
+				float porta_largura = 100.0f;
+				float porta_altura = 160.0f;
+
+				if (jogador.x < porta_x + porta_largura && jogador.x + jogador.largura > porta_x &&
+					jogador.y < porta_y + porta_altura && jogador.y + jogador.altura > porta_y) {
+					colidiu = true;
 				}
 
 				if (colidiu) {
@@ -625,11 +638,9 @@ int main() {
 			}
 		}
 
-		// Só desenha se a fila estiver vazia
 		if (redesenhar && al_is_event_queue_empty(fila_eventos)) {
 			redesenhar = false;
 
-			// Limpa a tela com cor de fundo azul escuro
 			al_clear_to_color(al_map_rgb(0, 0, 0));
 
 			switch (estado_atual) {
@@ -647,105 +658,157 @@ int main() {
 					int segundos = hud.segundos_restantes % 60;
 
 					char texto_hud[128];
-					sprintf_s(texto_hud, sizeof(texto_hud), "FASE: %d  |  TEMPO: %02d:%02d  |  PONTUACAO: %d  |  ENIGMAS: %d/%d",
-						hud.fase_atual, minutos, segundos, hud.pontuacao, hud.enigmas_resolvidos, hud.total_enigmas);
+					sprintf_s(texto_hud, sizeof(texto_hud), "FASE: %d  |  TEMPO: %02d:%02d  |  PONTUACAO: %d  |  ENIGMAS: %d/%d", hud.fase_atual, minutos, segundos, hud.pontuacao, hud.enigmas_resolvidos, hud.total_enigmas);
 
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, texto_hud);
 					
-					/* --- MODO DE DEBUG ---
+					/* DEBUG
 					ALLEGRO_COLOR cor_debug = al_map_rgb(255, 0, 0); // Vermelho vivo
-
 					// 1. Bancada Superior
 					al_draw_rectangle(0.0f, 0.0f, 1280.0f, 200.0f, cor_debug, 2.0f);
-
 					// 2. Bancada Lateral Esquerda
 					al_draw_rectangle(0.0f, 0.0f, 110.0f, 720.0f, cor_debug, 2.0f);
-
 					// 3. Bancada Inferior
 					al_draw_rectangle(0.0f, 580.0f, 1280.0f, 720.0f, cor_debug, 2.0f);
-
-					// 4. Bancada do Meio (usa as mesmas variáveis de tamanho que definiste nas colisões)
-					float meio_x = 400.0f;
-					float meio_y = 317.0f;
-					float meio_largura = 400.0f;
-					float meio_altura = 145.0f;
-					al_draw_rectangle(meio_x, meio_y, meio_x + meio_largura, meio_y + meio_altura, cor_debug, 2.0f);
-
-					// 5. Alocadores
-					float alocador_x = 880.0f;
-					float alocador_y = 200.0f;
-					float alocador_largura = 800.0f;
-					float alocador_altura = 150.0f;
-					al_draw_rectangle(alocador_x, alocador_y, alocador_x + alocador_largura, alocador_y + alocador_altura, cor_debug, 2.0f);
-
-					// 6. Pc
-					float pc_x = 1000.0f;
-					float pc_y = 455.0f;
-					float pc_largura = 280.0f;
-					float pc_altura = 120.0f;
-					al_draw_rectangle(pc_x, pc_y, pc_x + pc_largura, pc_y + pc_altura, cor_debug, 2.0f);
-					
-					// 7. Caixa do Jogador (para veres exatamente onde a colisão do boneco atua)
-					al_draw_rectangle(jogador_x, jogador_y, jogador_x + largura_jogador, jogador_y + altura_jogador, al_map_rgb(0, 255, 0), 2.0f); // Verde para o jogador
+					// 4. Terminal 1 (ALU)
+					al_draw_rectangle(400.0f, 317.0f, 400.0f + 385.0f, 317.0f + 146.0f, cor_debug, 2.0f);
+					// 5. Terminal 2 (Registradores) - VERIFICA ONDE ESTE RETÂNGULO APARECE NO MAPA!
+					al_draw_rectangle(890.0f, 200.0f, 890.0f + 210.0f, 200.0f + 120.0f, cor_debug, 2.0f);
+					// 6. Terminal 3 (Algoritmo)
+					al_draw_rectangle(1000.0f, 460.0f, 1000.0f + 300.0f, 460.0f + 115.0f, cor_debug, 2.0f);
+					// 7. Porta 
+					al_draw_rectangle(1180.0f, 200.0f, 1180.0f + 100.0f, 200.0f + 160.0f, cor_debug, 2.0f);
+					// 8. Caixa do Jogador (Verde)
+					al_draw_rectangle(jogador.x, jogador.y, jogador.x + jogador.largura, jogador.y + jogador.altura, al_map_rgb(0, 255, 0), 2.0f);
 					*/
+
+					float brilho = (float)(sin(al_get_time() * 6.0) + 1.0) * 0.5f; // Efeito de brilho/piscar (0.0 a 1.0)
+					ALLEGRO_COLOR cor_alerta = al_map_rgb(255, (int)(255 * brilho), 0); // Amarelo/Laranja a piscar
+
+					// Se o Enigma 1 (ALU) não estiver resolvido
+					if (!alu.resolvido) {
+						al_draw_rectangle(400.0f, 317.0f, 400.0f + 410.0f, 317.0f + 146.0f, cor_alerta, 3.0f);
+						al_draw_text(fonte, cor_alerta, 400.0f + (385.0f / 2.0f), 290.0f, ALLEGRO_ALIGN_CENTRE, "[ ALU ]");
+					}
+
+					// Se o Enigma 2 (Registradores) não estiver resolvido
+					if (!reg.resolvido) {
+						al_draw_rectangle(864.0f, 210.0f, 864.0f + 246.0f, 210.0f + 130.0f, cor_alerta, 3.0f);
+						al_draw_text(fonte, cor_alerta, 890.0f + (210.0f / 2.0f), 172.0f, ALLEGRO_ALIGN_CENTRE, "[ REGISTRADORES ]");
+					}
+
+					// Se o Enigma 3 (Algoritmo) não estiver resolvido
+					if (!alg.resolvido) {
+						al_draw_rectangle(1000.0f, 480.0f, 1000.0f + 200.0f, 480.0f + 210.0f, cor_alerta, 3.0f);
+						al_draw_text(fonte, cor_alerta, 1000.0f + (300.0f / 2.0f), 432.0f, ALLEGRO_ALIGN_CENTRE, "[ ALGORITMO ]");
+					}
+
+					if (alu.resolvido && reg.resolvido && alg.resolvido) {
+						float brilho_porta = (float)(sin(al_get_time() * 6.0) + 1.0) * 0.5f;
+						ALLEGRO_COLOR cor_porta = al_map_rgb(0, (int)(255 * brilho_porta), 255); // Azul/Ciano a piscar
+
+						// Retângulo com as tuas dimensões exatas da porta
+						al_draw_rectangle(1180.0f, 200.0f, 1180.0f + 100.0f, 200.0f + 160.0f, cor_porta, 3.0f);
+						al_draw_text(fonte, cor_porta, 1180.0f + (100.0f / 2.0f), 172.0f, ALLEGRO_ALIGN_CENTRE, "[ SAIDA ]");
+					}
 
 					float sx = jogador.frame_atual * jogador.tamanho_frame;
 					float sy = jogador.direcao * jogador.tamanho_frame;
-					al_draw_bitmap_region(jogador.spritesheet, sx, sy, jogador.tamanho_frame, jogador.tamanho_frame, jogador.x, jogador.y, 0);
+					al_draw_scaled_bitmap(jogador.spritesheet, sx, sy, jogador.tamanho_frame, jogador.tamanho_frame, jogador.x, jogador.y, jogador.largura, jogador.altura, 0);
 					
+					float margem = 25.0f;
+
+					bool perto_alu = !alu.resolvido && (jogador.x < 400.0f + 385.0f + margem && jogador.x + jogador.largura > 400.0f - margem &&
+						jogador.y < 317.0f + 146.0f + margem && jogador.y + jogador.altura > 317.0f - margem);
+
+					bool perto_reg = !reg.resolvido && (jogador.x < 890.0f + 210.0f + margem && jogador.x + jogador.largura > 890.0f - margem &&
+						jogador.y < 200.0f + 120.0f + margem && jogador.y + jogador.altura > 200.0f - margem);
+
+					bool perto_alg = !alg.resolvido && (jogador.x < 1000.0f + 300.0f + margem && jogador.x + jogador.largura > 1000.0f - margem &&
+						jogador.y < 460.0f + 115.0f + margem && jogador.y + jogador.altura > 460.0f - margem);
+
+					bool perto_porta = (alu.resolvido && reg.resolvido && alg.resolvido) &&
+						(jogador.x < 1180.0f + 100.0f + margem && jogador.x + jogador.largura > 1180.0f - margem &&
+							jogador.y < 200.0f + 160.0f + margem && jogador.y + jogador.altura > 200.0f - margem);
+
+					// Se estiver perto de qualquer enigma pendente, exibe o aviso centralizado no fundo do ecrã
+					if (perto_alu || perto_reg || perto_alg) {
+						al_draw_filled_rectangle(LARGURA_TELA / 2 - 220, 560, LARGURA_TELA / 2 + 220, 620, al_map_rgba(0, 0, 0, 200));
+						al_draw_rectangle(LARGURA_TELA / 2 - 220, 560, LARGURA_TELA / 2 + 220, 620, al_map_rgb(0, 255, 255), 2.0f);
+						al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 578, ALLEGRO_ALIGN_CENTRE, "Pressione [ E ] para interagir com o Enigma");
+					}
+					else if (perto_porta) {
+						al_draw_filled_rectangle(LARGURA_TELA / 2 - 220, 560, LARGURA_TELA / 2 + 220, 620, al_map_rgba(0, 0, 0, 200));
+						al_draw_rectangle(LARGURA_TELA / 2 - 220, 560, LARGURA_TELA / 2 + 220, 620, al_map_rgb(0, 255, 255), 2.0f);
+						al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 578, ALLEGRO_ALIGN_CENTRE, "Pressione [ E ] para abrir a porta e escapar!");
+					}
+
 					break;
 
 				case ESTADO_ENIGMA1:
 					al_clear_to_color(al_map_rgb(20, 30, 40));
 
 					// Título Principal
-					al_draw_text(fonte, al_map_rgb(0, 255, 255), LARGURA_TELA / 2, 30, ALLEGRO_ALIGN_CENTRE, "DECODIFICADOR ALU - SOMA BINARIA");
+					al_draw_text(fonte, al_map_rgb(0, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, "DECODIFICADOR ALU - SOMA BINARIA");
 
-					// Instruções bem espaçadas para não sobrepor
-					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 75, ALLEGRO_ALIGN_CENTRE, "COMO JOGAR:");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 100, ALLEGRO_ALIGN_CENTRE, "1. O computador le numeros somando potencias de 2 (0 = desligado, 1 = ligado).");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 120, ALLEGRO_ALIGN_CENTRE, "2. Da direita para a esquerda, os blocos valem: 1, 2, 4, 8, 16, 32, 64 e 128.");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 140, ALLEGRO_ALIGN_CENTRE, "3. Clique nos blocos para ligar/desligar ate atingir a soma correta!");
+					// Instruções Educativas Detalhadas
+					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 55, ALLEGRO_ALIGN_CENTRE, "COMO FUNCIONA O SISTEMA BINARIO:");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 75, ALLEGRO_ALIGN_CENTRE, "- Cada bloco representa uma potencia de 2 (da esquerda para a direita: 128 ate 1).");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 95, ALLEGRO_ALIGN_CENTRE, "- Quando o bloco esta LIGADO (1), somamos o seu valor decimal correspondente.");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 115, ALLEGRO_ALIGN_CENTRE, "- Exemplo: Para formar o 5, ligue os blocos 4 e 1 (4 + 1 = 5).");
 
-					// Operação matemática (com espaço seguro em relação às instruções)
+					// Operação matemática que o jogador precisa resolver
 					char operacao[64];
-					sprintf_s(operacao, sizeof(operacao), "RESOLVA A SOMA: %d + %d = ?", alu.num1, alu.num2);
-					al_draw_text(fonte, al_map_rgb(255, 255, 0), LARGURA_TELA / 2, 190, ALLEGRO_ALIGN_CENTRE, operacao);
+					sprintf_s(operacao, sizeof(operacao), "RESOLVA A SOMA: %d + %d = %d", alu.num1, alu.num2, alu.num1 + alu.num2);
+					al_draw_text(fonte, al_map_rgb(255, 255, 0), LARGURA_TELA / 2, 155, ALLEGRO_ALIGN_CENTRE, operacao);
 
-					// Blocos de bits posicionados mais abaixo
+					// Blocos de bits e valores posicionados
 					float x = LARGURA_TELA / 2 - 220; // Centralizado para 8 blocos
-					float y = 260;
+					float y = 200;
+					float largura_bit = 45;
+					float altura_bit = 60;
 
 					for (int i = 0; i < 8; i++) {
 						float bit_x = x + (i * 55);
 
+						// Desenha a caixa do bit (Verde se ligado, Cinzento se desligado)
 						ALLEGRO_COLOR cor_caixa = (alu.bits[i] == 1) ? al_map_rgb(0, 200, 100) : al_map_rgb(80, 90, 100);
-						al_draw_filled_rectangle(bit_x, y, bit_x + 45, y + 60, cor_caixa);
-						al_draw_rectangle(bit_x, y, bit_x + 45, y + 60, al_map_rgb(255, 255, 255), 2.0f);
+						al_draw_filled_rectangle(bit_x, y, bit_x + largura_bit, y + altura_bit, cor_caixa);
+						al_draw_rectangle(bit_x, y, bit_x + largura_bit, y + altura_bit, al_map_rgb(255, 255, 255), 2.0f);
 
+						// Valor do bit (0 ou 1) dentro da caixa
 						char bit[4];
 						sprintf_s(bit, sizeof(bit), "%d", alu.bits[i]);
-						al_draw_text(fonte, al_map_rgb(255, 255, 255), bit_x + 22.5f, y + 20, ALLEGRO_ALIGN_CENTRE, bit);
+						al_draw_text(fonte, al_map_rgb(255, 255, 255), bit_x + (largura_bit / 2), y + 20, ALLEGRO_ALIGN_CENTRE, bit);
+
+						// VALOR DECIMAL CORRESPONDENTE EMBAIXO DO BLOCO (128, 64, 32, 16, 8, 4, 2, 1)
+						int valor_pos = 128 >> i; // Deslocamento de bits para calcular a potência de 2 decrescente
+						char valor_str[8];
+						sprintf_s(valor_str, sizeof(valor_str), "%d", valor_pos);
+						al_draw_text(fonte, al_map_rgb(255, 165, 0), bit_x + (largura_bit / 2), y + 68, ALLEGRO_ALIGN_CENTRE, valor_str);
 					}
 
+					// Mensagem de erro ou acerto
 					if (alu.erro) {
-						al_draw_text(fonte, al_map_rgb(255, 60, 60), LARGURA_TELA / 2, 380, ALLEGRO_ALIGN_CENTRE, "RESPOSTA INCORRETA! -500 pontos");
+						al_draw_text(fonte, al_map_rgb(255, 60, 60), LARGURA_TELA / 2, 310, ALLEGRO_ALIGN_CENTRE, "RESPOSTA INCORRETA! Tente novamente (-500 pontos)");
 					}
-
 					if (alu.acertou) {
 						if (alu.tentativa_atual == 0) {
-							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 430, ALLEGRO_ALIGN_CENTRE, "CORRETO! +1000 pontos de primeira!");
+							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 310, ALLEGRO_ALIGN_CENTRE, "CORRETO! +1000 pontos de primeira!");
 						}
 						else {
-							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 430, ALLEGRO_ALIGN_CENTRE, "CORRETO!");
+							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 310, ALLEGRO_ALIGN_CENTRE, "CORRETO!");
 						}
 					}
 
-					// Botão Confirmar
+					// Botão Confirmar posicionado com segurança abaixo dos valores
 					float botao_x = LARGURA_TELA / 2 - 100;
-					float botao_y = 360;
-					al_draw_filled_rectangle(botao_x, botao_y, botao_x + 200, botao_y + 50, al_map_rgb(0, 120, 200));
-					al_draw_rectangle(botao_x, botao_y, botao_x + 200, botao_y + 50, al_map_rgb(255, 255, 255), 2.0f);
+					float botao_y = 350;
+					float botao_largura = 200;
+					float botao_altura = 50;
+
+					al_draw_filled_rectangle(botao_x, botao_y, botao_x + botao_largura, botao_y + botao_altura, al_map_rgb(0, 120, 200));
+					al_draw_rectangle(botao_x, botao_y, botao_x + botao_largura, botao_y + botao_altura, al_map_rgb(255, 255, 255), 2.0f);
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, botao_y + 18, ALLEGRO_ALIGN_CENTRE, "CONFIRMAR");
 					break;
 
@@ -753,22 +816,22 @@ int main() {
 					al_clear_to_color(al_map_rgb(30, 20, 40));
 
 					// Título Principal
-					al_draw_text(fonte, al_map_rgb(255, 150, 0), LARGURA_TELA / 2, 30, ALLEGRO_ALIGN_CENTRE, "ALOCACAO DE REGISTRADORES - HEXADECIMAL");
+					al_draw_text(fonte, al_map_rgb(255, 150, 0), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, "ALOCACAO DE REGISTRADORES - HEXADECIMAL");
 
-					// Instruções bem espaçadas
-					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 50, ALLEGRO_ALIGN_CENTRE, "COMO JOGAR:");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 70, ALLEGRO_ALIGN_CENTRE, "1. Hexadecimal usa 0-9 e letras A-F (A=10, B=11, C=12, D=13, E=14, F=15).");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 90, ALLEGRO_ALIGN_CENTRE, "2. Ignore o '0x' e compare os valores (Ex: 0x15 e menor que 0x86).");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 110, ALLEGRO_ALIGN_CENTRE, "3. Objetivo: Organizar os 4 blocos da ESQUERDA (menor) para a DIREITA (maior).");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 130, ALLEGRO_ALIGN_CENTRE, "4. Clique num bloco para seleciona-lo (amarelo) e noutro para troca-los.");
+					// Instruções Educativas Detalhadas e Claras
+					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 55, ALLEGRO_ALIGN_CENTRE, "COMO FUNCIONA O SISTEMA HEXADECIMAL E O OBJETIVO:");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 75, ALLEGRO_ALIGN_CENTRE, "1. O sistema hexadecimal usa base 16: digitos 0-9 e letras A-F (A=10, B=11, C=12, D=13, E=14, F=15).");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 95, ALLEGRO_ALIGN_CENTRE, "2. Ignore o prefixo '0x' e compare os valores da esquerda para a direita (Ex: 0x0D e menor que 0x41).");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 115, ALLEGRO_ALIGN_CENTRE, "3. OBJETIVO: Clique no primeiro registrador para selecionar (fica amarelo) e clique noutro para");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 135, ALLEGRO_ALIGN_CENTRE, "   troca-los de lugar, organizando os 4 blocos em ORDEM CRESCENTE (do menor para o maior).");
 
-					al_draw_text(fonte, al_map_rgb(255, 255, 0), LARGURA_TELA / 2, 190, ALLEGRO_ALIGN_CENTRE, "ORGANIZE OS SLOTS ABAIXO EM ORDEM CRESCENTE:");
+					al_draw_text(fonte, al_map_rgb(255, 255, 0), LARGURA_TELA / 2, 175, ALLEGRO_ALIGN_CENTRE, "ORGANIZE OS REGISTRADORES ABAIXO:");
 
 					// Slots de registradores posicionados em segurança
 					float largura_slot = 100;
 					float altura_slot = 60;
 					float inicio_x = LARGURA_TELA / 2 - 230;
-					float y_slots = 260;
+					float y_slots = 210;
 
 					for (int i = 0; i < 4; i++) {
 						float slot_x = inicio_x + (i * 120);
@@ -782,69 +845,77 @@ int main() {
 						al_draw_text(fonte, al_map_rgb(255, 255, 255), slot_x + (largura_slot / 2), y_slots + 20, ALLEGRO_ALIGN_CENTRE, texto_hex);
 					}
 
+					// Mensagem de erro ou acerto
 					if (reg.erro) {
-						al_draw_text(fonte, al_map_rgb(255, 60, 60), LARGURA_TELA / 2, 390, ALLEGRO_ALIGN_CENTRE, "RESPOSTA INCORRETA! -500 pontos");
+						al_draw_text(fonte, al_map_rgb(255, 60, 60), LARGURA_TELA / 2, 300, ALLEGRO_ALIGN_CENTRE, "RESPOSTA INCORRETA! Tente novamente (-500 pontos)");
 					}
-
 					if (reg.acertou) {
 						if (reg.tentativa_atual == 0) {
-							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 430, ALLEGRO_ALIGN_CENTRE, "CORRETO! +1000 pontos de primeira!");
+							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 300, ALLEGRO_ALIGN_CENTRE, "CORRETO! +1000 pontos de primeira!");
 						}
 						else {
-							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 430, ALLEGRO_ALIGN_CENTRE, "CORRETO!");
+							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 300, ALLEGRO_ALIGN_CENTRE, "CORRETO!");
 						}
 					}
 
-					// Botão Confirmar
+					// Botão Confirmar posicionado logo abaixo
 					float b_x = LARGURA_TELA / 2 - 100;
-					float b_y = 360;
-					al_draw_filled_rectangle(b_x, b_y, b_x + 200, b_y + 50, al_map_rgb(0, 150, 100));
-					al_draw_rectangle(b_x, b_y, b_x + 200, b_y + 50, al_map_rgb(255, 255, 255), 2.0f);
+					float b_y = 340;
+					float b_largura = 200;
+					float b_altura = 50;
+
+					al_draw_filled_rectangle(b_x, b_y, b_x + b_largura, b_y + b_altura, al_map_rgb(0, 150, 100));
+					al_draw_rectangle(b_x, b_y, b_x + b_largura, b_y + b_altura, al_map_rgb(255, 255, 255), 2.0f);
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, b_y + 18, ALLEGRO_ALIGN_CENTRE, "CONFIRMAR");
 					break;
 
 				case ESTADO_ENIGMA3:
 					al_clear_to_color(al_map_rgb(20, 20, 35));
 
-					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 55, ALLEGRO_ALIGN_CENTRE, "COMO JOGAR:");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 75, ALLEGRO_ALIGN_CENTRE, "1. Analise o trecho de codigo exibido no monitor.");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 95, ALLEGRO_ALIGN_CENTRE, "2. Digite o parametro que falta e aperte ENTER.");
+					// Título Principal
+					al_draw_text(fonte, al_map_rgb(0, 200, 255), LARGURA_TELA / 2, 15, ALLEGRO_ALIGN_CENTRE, "ANALISE DE ALGORITMO - VETORES E LOOPS");
 
-					// Caixa estilo monitor/consola para o código
-					al_draw_filled_rectangle(240, 140, 1040, 270, al_map_rgb(10, 10, 15));
-					al_draw_rectangle(240, 140, 1040, 270, al_map_rgb(100, 100, 120), 2.0f);
+					// Instruções Super Explícitas (Passo a Passo Educativo)
+					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 45, ALLEGRO_ALIGN_CENTRE, "EXPLICACAO DIDATICA:");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 65, ALLEGRO_ALIGN_CENTRE, "1. Em C, os vetores comecam no indice 0. As posicoes sao: 0, 1, 2, 3 e 4.");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 85, ALLEGRO_ALIGN_CENTRE, "2. O vetor tem 5 elementos: {10, 20, 30, 40, 50}.");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 105, ALLEGRO_ALIGN_CENTRE, "3. Para visitar todos sem falhar nenhum, 'i' deve ir de 0 ate 4 (5 voltas no total).");
+					al_draw_text(fonte, al_map_rgb(255, 255, 0), LARGURA_TELA / 2, 125, ALLEGRO_ALIGN_CENTRE, "OBJETIVO: Preencha o espaco (___) com o numero total de iteracoes (5).");
 
-					// Linhas de código do desafio
-					al_draw_text(fonte, al_map_rgb(100, 255, 100), 260, 155, ALLEGRO_ALIGN_LEFT, alg.codigo_linha1);
-					al_draw_text(fonte, al_map_rgb(100, 255, 100), 260, 185, ALLEGRO_ALIGN_LEFT, alg.codigo_linha2);
-					al_draw_text(fonte, al_map_rgb(100, 255, 100), 260, 215, ALLEGRO_ALIGN_LEFT, alg.codigo_linha3);
+					// Código de programação exibido
+					al_draw_text(fonte, al_map_rgb(100, 255, 100), LARGURA_TELA / 2, 155, ALLEGRO_ALIGN_CENTRE, alg.codigo_linha1);
+					al_draw_text(fonte, al_map_rgb(100, 255, 100), LARGURA_TELA / 2, 175, ALLEGRO_ALIGN_CENTRE, alg.codigo_linha2);
+					al_draw_text(fonte, al_map_rgb(100, 255, 100), LARGURA_TELA / 2, 195, ALLEGRO_ALIGN_CENTRE, alg.codigo_linha3);
 
-					// Caixa onde o jogador escreve a resposta
-					al_draw_text(fonte, al_map_rgb(255, 255, 0), LARGURA_TELA / 2, 300, ALLEGRO_ALIGN_CENTRE, "DIGITE A SUA RESPOSTA:");
+					// Caixa de Input do Jogador
+					float caixa_x = LARGURA_TELA / 2 - 100;
+					float caixa_y = 225;
+					float caixa_largura = 200;
+					float caixa_altura = 45;
 
-					float input_x = LARGURA_TELA / 2 - 150;
-					float input_y = 330;
-					al_draw_filled_rectangle(input_x, input_y, input_x + 300, input_y + 50, al_map_rgb(40, 40, 60));
-					al_draw_rectangle(input_x, input_y, input_x + 300, input_y + 50, al_map_rgb(255, 255, 255), 2.0f);
+					al_draw_filled_rectangle(caixa_x, caixa_y, caixa_x + caixa_largura, caixa_y + caixa_altura, al_map_rgb(50, 60, 80));
+					al_draw_rectangle(caixa_x, caixa_y, caixa_x + caixa_largura, caixa_y + caixa_altura, al_map_rgb(255, 255, 255), 2.0f);
 
-					// Mostra o texto que está a ser escrito pelo jogador com o cursor "_"
-					char texto_input[64];
-					sprintf_s(texto_input, sizeof(texto_input), "%s_", alg.input_jogador);
-					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, input_y + 18, ALLEGRO_ALIGN_CENTRE, texto_input);
+					// Texto digitado pelo jogador
+					char buffer_input[64];
+					sprintf_s(buffer_input, sizeof(buffer_input), "%s", alg.input_jogador);
+					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, caixa_y + 12, ALLEGRO_ALIGN_CENTRE, buffer_input);
 
-					// Mensagem de erro temporária (se errar)
+					// Mensagem de erro ou acerto
 					if (alg.erro) {
-						al_draw_text(fonte, al_map_rgb(255, 60, 60), LARGURA_TELA / 2, 400, ALLEGRO_ALIGN_CENTRE, "RESPOSTA INCORRETA! -500 pontos");
+						al_draw_text(fonte, al_map_rgb(255, 60, 60), LARGURA_TELA / 2, 280, ALLEGRO_ALIGN_CENTRE, "RESPOSTA INCORRETA! Tente novamente (-500 pontos)");
 					}
-
 					if (alg.acertou) {
 						if (alg.tentativa_atual == 0) {
-							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 400, ALLEGRO_ALIGN_CENTRE, "CORRETO! +1000 pontos de primeira!");
+							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 280, ALLEGRO_ALIGN_CENTRE, "CORRETO! +1000 pontos de primeira!");
 						}
 						else {
-							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 400, ALLEGRO_ALIGN_CENTRE, "CORRETO!");
+							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 280, ALLEGRO_ALIGN_CENTRE, "CORRETO!");
 						}
 					}
+
+					// Instrução de confirmação
+					al_draw_text(fonte, al_map_rgb(180, 180, 180), LARGURA_TELA / 2, 320, ALLEGRO_ALIGN_CENTRE, "Prima ENTER para confirmar a resposta");
 					break;
 
 				default:
