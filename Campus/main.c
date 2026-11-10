@@ -72,7 +72,15 @@ typedef struct {
 } EnigmaAlgoritmo;
 
 // MÁQUINA DE ESTADO
-typedef enum { ESTADO_MENU, ESTADO_FASE1, ESTADO_ENIGMA1, ESTADO_ENIGMA2, ESTADO_ENIGMA3, ESTADO_SAIR } Estado;
+typedef enum { 
+	ESTADO_MENU, 
+	ESTADO_FASE1,
+	ESTADO_FASE2,
+	ESTADO_ENIGMA1, 
+	ESTADO_ENIGMA2, 
+	ESTADO_ENIGMA3, 
+	ESTADO_SAIR 
+} Estado;
 
 // FUNÇÕES
 void gerar_numeros_alu(EnigmaALU *alu) {
@@ -148,6 +156,7 @@ int main() {
 	ALLEGRO_EVENT_QUEUE *fila_eventos = al_create_event_queue();
 	ALLEGRO_FONT *fonte = al_create_builtin_font(); // ALLEGRO_FONT *fonte = al_load_font("arial.ttf", 24, 0);
 	ALLEGRO_BITMAP *mapa_fase1 = al_load_bitmap("mapa_fase1.png");
+	ALLEGRO_BITMAP *mapa_fase2 = al_load_bitmap("mapa_fase2.png");
 
 	al_register_event_source(fila_eventos, al_get_display_event_source(display));
 	al_register_event_source(fila_eventos, al_get_timer_event_source(timer));
@@ -223,7 +232,7 @@ int main() {
 				}
 			}
 
-			if (estado_atual == ESTADO_FASE1) {
+			if (estado_atual == ESTADO_FASE1 || estado_atual == ESTADO_FASE2) {
 				if (evento.keyboard.keycode == ALLEGRO_KEY_W || evento.keyboard.keycode == ALLEGRO_KEY_UP) {
 					jogador.velocidade_y = -4.0f;
 					jogador.direcao = 1;
@@ -299,12 +308,25 @@ int main() {
 						estado_atual = ESTADO_ENIGMA3;
 						redesenhar = true;
 					}
+
+					bool perto_porta = (alu.resolvido && reg.resolvido && alg.resolvido) &&
+						(jogador.x < 1180.0f + 100.0f + 25.0f && jogador.x + jogador.largura > 1180.0f - 25.0f &&
+							jogador.y < 200.0f + 160.0f + 25.0f && jogador.y + jogador.altura > 200.0f - 25.0f);
+
+					if (perto_porta) {
+						estado_atual = ESTADO_FASE2;
+						jogador.x = 150.0f; 
+						jogador.y = 300.0f;
+						hud.fase_atual = 2;
+						hud.enigmas_resolvidos = 0;
+						hud.total_enigmas = 4; 
+					}
 				}
 			}
 		}
 
 		else if (evento.type == ALLEGRO_EVENT_KEY_UP) {
-			if (estado_atual == ESTADO_FASE1) {
+			if (estado_atual == ESTADO_FASE1 || estado_atual == ESTADO_FASE2) {
 				if (evento.keyboard.keycode == ALLEGRO_KEY_W || evento.keyboard.keycode == ALLEGRO_KEY_UP ||
 					evento.keyboard.keycode == ALLEGRO_KEY_S || evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
 					jogador.velocidade_y = 0.0f;
@@ -634,6 +656,37 @@ int main() {
 					jogador.frame_atual = 0;
 				}
 			}
+
+			// FASE 2
+			if (estado_atual == ESTADO_FASE2) {
+				jogador.x += jogador.velocidade_x;
+				jogador.y += jogador.velocidade_y;
+
+				bool colidiu_f2 = false;
+				bool movendo_f2 = (jogador.velocidade_x != 0 || jogador.velocidade_y != 0);
+
+				// TODO: Substituir pelas novas coordenadas das paredes e bancadas da Fase 2
+				if (jogador.x < 0.0f || jogador.x + jogador.largura > LARGURA_TELA || jogador.y < 0.0f || jogador.y + jogador.altura > ALTURA_TELA) {
+					colidiu_f2 = true;
+				}
+
+				if (colidiu_f2) {
+					jogador.x -= jogador.velocidade_x;
+					jogador.y -= jogador.velocidade_y;
+				}
+
+				if (movendo_f2) {
+					static int contador_animacao_f2 = 0;
+					contador_animacao_f2++;
+					if (contador_animacao_f2 >= 8) {
+						jogador.frame_atual = (jogador.frame_atual + 1) % 7;
+						contador_animacao_f2 = 0;
+					}
+				}
+				else {
+					jogador.frame_atual = 0;
+				}
+			}
 		}
 
 		if (redesenhar && al_is_event_queue_empty(fila_eventos)) {
@@ -662,7 +715,7 @@ int main() {
 
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, texto_hud);
 					
-					/* DEBUG
+					/* DEBUG */
 					ALLEGRO_COLOR cor_debug = al_map_rgb(255, 0, 0); // Vermelho vivo
 					// 1. Bancada Superior
 					al_draw_rectangle(0.0f, 0.0f, 1280.0f, 200.0f, cor_debug, 2.0f);
@@ -680,7 +733,7 @@ int main() {
 					al_draw_rectangle(1180.0f, 200.0f, 1180.0f + 100.0f, 200.0f + 160.0f, cor_debug, 2.0f);
 					// 8. Caixa do Jogador (Verde)
 					al_draw_rectangle(jogador.x, jogador.y, jogador.x + jogador.largura, jogador.y + jogador.altura, al_map_rgb(0, 255, 0), 2.0f);
-					*/
+					
 
 					float brilho = (float)(sin(al_get_time() * 6.0) + 1.0) * 0.5f; 
 					ALLEGRO_COLOR cor_alerta = al_map_rgb(255, (int)(255 * brilho), 0); 
@@ -739,6 +792,24 @@ int main() {
 						al_draw_rectangle(LARGURA_TELA / 2 - 220, 560, LARGURA_TELA / 2 + 220, 620, al_map_rgb(0, 255, 255), 2.0f);
 						al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 578, ALLEGRO_ALIGN_CENTRE, "Pressione [ E ] para abrir a porta e escapar!");
 					}
+
+					break;
+				
+				// FASE 2
+				case ESTADO_FASE2:
+					al_draw_bitmap(mapa_fase2, 0, 0, 0);
+
+					int minutos_f2 = hud.segundos_restantes / 60;
+					int segundos_f2 = hud.segundos_restantes % 60;
+
+					char texto_hud_f2[128];
+					sprintf_s(texto_hud_f2, sizeof(texto_hud_f2), "FASE: %d  |  TEMPO: %02d:%02d  |  PONTUACAO: %d  |  ENIGMAS: %d/%d", hud.fase_atual, minutos_f2, segundos_f2, hud.pontuacao, hud.enigmas_resolvidos, hud.total_enigmas);
+
+					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, texto_hud_f2);
+
+					float sx_f2 = jogador.frame_atual * jogador.tamanho_frame;
+					float sy_f2 = jogador.direcao * jogador.tamanho_frame;
+					al_draw_scaled_bitmap(jogador.spritesheet, sx_f2, sy_f2, jogador.tamanho_frame, jogador.tamanho_frame, jogador.x, jogador.y, jogador.largura, jogador.altura, 0);
 
 					break;
 				
@@ -899,6 +970,7 @@ int main() {
 	}
 
 	al_destroy_bitmap(mapa_fase1);
+	al_destroy_bitmap(mapa_fase2);
 	al_destroy_bitmap(jogador.spritesheet);
 	al_destroy_font(fonte);
 	al_destroy_event_queue(fila_eventos);
