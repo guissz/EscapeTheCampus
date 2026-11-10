@@ -13,6 +13,7 @@
 #define ALTURA_TELA 720
 #define FPS 60.0
 
+// STRUCTS
 typedef struct {
 	float x, y;
 	float largura, altura;
@@ -70,8 +71,10 @@ typedef struct {
 	bool acertou;
 } EnigmaAlgoritmo;
 
+// MÁQUINA DE ESTADO
 typedef enum { ESTADO_MENU, ESTADO_FASE1, ESTADO_ENIGMA1, ESTADO_ENIGMA2, ESTADO_ENIGMA3, ESTADO_SAIR } Estado;
 
+// FUNÇÕES
 void gerar_numeros_alu(EnigmaALU *alu) {
 	alu->num1 = (rand() % 15) + 1;
 	alu->num2 = (rand() % 15) + 1;
@@ -129,6 +132,7 @@ void gerar_algoritmo(EnigmaAlgoritmo *alg) {
 
 int main() {
 
+	// INICIALIZAÇÃO DO ALLEGRO
 	al_init();
 	al_init_font_addon();
 	al_init_ttf_addon();
@@ -156,7 +160,7 @@ int main() {
 	bool rodando = true;
 	bool redesenhar = false;
 
-	// Inicialização do jogador
+	// INICIALIZAÇÃO DO JOGADOR
 	Jogador jogador;
 	jogador.x = 150.0f;
 	jogador.y = 300.0f;
@@ -169,7 +173,7 @@ int main() {
 	jogador.direcao = 0;
 	jogador.spritesheet = al_load_bitmap("player_spritesheet.png");
 
-	// Inicialização do HUD
+	// INICIALIZAÇÃO DA HUD
 	HUD hud;
 	hud.pontuacao = 10000;
 	hud.segundos_restantes = 600;
@@ -177,23 +181,23 @@ int main() {
 	hud.fase_atual = 1;
 	hud.total_enigmas = 3;
 
-	// Inicialização do Enigma ALU
+	// INICIALIZAÇÃO DO ENIGMA 1 (ALU)
 	EnigmaALU alu;
 	gerar_numeros_alu(&alu);
 
-	// Inicialização do Enigma dos Registradores
+	// INICIALIZAÇÃO DO ENIGMA 2 (REGISTRADORES)
 	EnigmaRegistradores reg;
 	gerar_registradores(&reg);
 
-	// Inicialização do Enigma de Algoritmos
+	// INICIALIZAÇÃO DO ENIGMA 3 (ALGORITMO)
 	EnigmaAlgoritmo alg;
 	gerar_algoritmo(&alg);
 
-	// Inicia o relógio para começar a contar o tempo
+	// INICIALIZAÇÃO DO TEMPORIZADOR
 	static int contador_tempo = 0;
 	al_start_timer(timer);
 
-	// Game Loop principal
+	// Game Loop
 	while (rodando) {
 		ALLEGRO_EVENT evento;
 
@@ -203,6 +207,7 @@ int main() {
 			rodando = false;
 		}
 
+		// CONTROLE DE TECLAS
 		else if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
 			if (evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
 				if (estado_atual == ESTADO_ENIGMA1 || estado_atual == ESTADO_ENIGMA2 || estado_atual == ESTADO_ENIGMA3) {
@@ -392,7 +397,7 @@ int main() {
 				if (mouse_x >= botao_x && mouse_x <= botao_x + botao_largura && mouse_y >= botao_y && mouse_y <= botao_y + botao_altura) {
 					int resposta_jogador = 0;
 					for (int i = 0; i < 8; i++) {
-						resposta_jogador = (resposta_jogador << 1) | alu.bits[i];
+						resposta_jogador = (resposta_jogador * 2) + alu.bits[i];
 					}
 
 					int resposta_correta = alu.num1 + alu.num2;
@@ -637,13 +642,15 @@ int main() {
 			al_clear_to_color(al_map_rgb(0, 0, 0));
 
 			switch (estado_atual) {
+				//MENU PRINCIPAL
 				case ESTADO_MENU:
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, ALTURA_TELA / 2 - 10,
 						ALLEGRO_ALIGN_CENTRE, "Escape The Campus");
 					al_draw_text(fonte, al_map_rgb(0, 255, 200), LARGURA_TELA / 2, ALTURA_TELA / 2 + 10,
 						ALLEGRO_ALIGN_CENTRE, "Pressione Enter para jogar");
 					break;
-
+				
+				// FASE 1
 				case ESTADO_FASE1:
 					al_draw_bitmap(mapa_fase1, 0, 0, 0);
 					
@@ -734,7 +741,8 @@ int main() {
 					}
 
 					break;
-
+				
+				// ENIGMA 1
 				case ESTADO_ENIGMA1:
 					al_clear_to_color(al_map_rgb(20, 30, 40));
 					al_draw_text(fonte, al_map_rgb(0, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, "DECODIFICADOR ALU - SOMA BINARIA");
@@ -790,7 +798,8 @@ int main() {
 					al_draw_rectangle(botao_x, botao_y, botao_x + botao_largura, botao_y + botao_altura, al_map_rgb(255, 255, 255), 2.0f);
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, botao_y + 18, ALLEGRO_ALIGN_CENTRE, "CONFIRMAR");
 					break;
-
+				
+				// ENIGMA 2
 				case ESTADO_ENIGMA2:
 					al_clear_to_color(al_map_rgb(30, 20, 40));
 					al_draw_text(fonte, al_map_rgb(255, 150, 0), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, "ALOCACAO DE REGISTRADORES - HEXADECIMAL");
@@ -841,6 +850,7 @@ int main() {
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, b_y + 18, ALLEGRO_ALIGN_CENTRE, "CONFIRMAR");
 					break;
 
+				// ENIGMA 3
 				case ESTADO_ENIGMA3:
 					al_clear_to_color(al_map_rgb(20, 20, 35));
 					al_draw_text(fonte, al_map_rgb(0, 200, 255), LARGURA_TELA / 2, 15, ALLEGRO_ALIGN_CENTRE, "ANALISE DE ALGORITMO - VETORES E LOOPS");
