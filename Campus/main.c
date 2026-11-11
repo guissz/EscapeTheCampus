@@ -155,8 +155,8 @@ int main() {
 	ALLEGRO_TIMER *timer = al_create_timer(1.0 / FPS);
 	ALLEGRO_EVENT_QUEUE *fila_eventos = al_create_event_queue();
 	ALLEGRO_FONT *fonte = al_create_builtin_font(); // ALLEGRO_FONT *fonte = al_load_font("arial.ttf", 24, 0);
-	ALLEGRO_BITMAP *mapa_fase1 = al_load_bitmap("mapa_fase1.png");
-	ALLEGRO_BITMAP *mapa_fase2 = al_load_bitmap("mapa_fase2.png");
+	ALLEGRO_BITMAP *mapa_fase1 = al_load_bitmap("mapa_fase1.jpg");
+	ALLEGRO_BITMAP *mapa_fase2 = NULL;
 
 	al_register_event_source(fila_eventos, al_get_display_event_source(display));
 	al_register_event_source(fila_eventos, al_get_timer_event_source(timer));
@@ -232,6 +232,7 @@ int main() {
 				}
 			}
 
+			// MOVIMENTAÇÃO
 			if (estado_atual == ESTADO_FASE1 || estado_atual == ESTADO_FASE2) {
 				if (evento.keyboard.keycode == ALLEGRO_KEY_W || evento.keyboard.keycode == ALLEGRO_KEY_UP) {
 					jogador.velocidade_y = -4.0f;
@@ -253,6 +254,7 @@ int main() {
 					jogador.direcao = 3;
 				}
 
+				// INTERAÇÕES
 				if (estado_atual == ESTADO_FASE1 && evento.keyboard.keycode == ALLEGRO_KEY_E) {
 					// Interação com a ALU
 					float margem = 20.0f;
@@ -309,18 +311,31 @@ int main() {
 						redesenhar = true;
 					}
 
+					// Interação com a porta
 					bool perto_porta = (alu.resolvido && reg.resolvido && alg.resolvido) &&
 						(jogador.x < 1180.0f + 100.0f + 25.0f && jogador.x + jogador.largura > 1180.0f - 25.0f &&
 							jogador.y < 200.0f + 160.0f + 25.0f && jogador.y + jogador.altura > 200.0f - 25.0f);
 
-					if (perto_porta) {
+					if (perto_porta && evento.keyboard.keycode == ALLEGRO_KEY_E) {
+						if (mapa_fase1 != NULL) {
+							al_destroy_bitmap(mapa_fase1);
+							mapa_fase1 = NULL;
+						}
+
+						// Inicialização do mapa 2
+						mapa_fase2 = al_load_bitmap("mapa_fase2.jpg");
+						
 						estado_atual = ESTADO_FASE2;
-						jogador.x = 150.0f; 
+						jogador.x = 130.0f; 
 						jogador.y = 300.0f;
 						hud.fase_atual = 2;
 						hud.enigmas_resolvidos = 0;
 						hud.total_enigmas = 4; 
 					}
+				}
+
+				else if (estado_atual == ESTADO_FASE2 && evento.keyboard.keycode == ALLEGRO_KEY_E) {
+
 				}
 			}
 		}
@@ -338,6 +353,7 @@ int main() {
 			}
 		}
 
+		// LÓGICA DOS ENIGMAS COM TECLADO
 		else if (evento.type == ALLEGRO_EVENT_KEY_CHAR) {
 			// Lógica enigma 3
 			if (estado_atual == ESTADO_ENIGMA3) {
@@ -389,6 +405,7 @@ int main() {
 			}
 		}
 
+		// LÓGICA DOS ENIGMAS COM MOUSE
 		else if (evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
 			float mouse_x = evento.mouse.x;
 			float mouse_y = evento.mouse.y;
@@ -609,6 +626,7 @@ int main() {
 				float alocador_y = 200.0f;
 				float alocador_largura = 210.0f;
 				float alocador_altura = 120.0f;
+				
 				if (jogador.x < alocador_x + alocador_largura && jogador.x + jogador.largura > alocador_x &&
 					jogador.y < alocador_y + alocador_altura && jogador.y + jogador.altura > alocador_y) {
 					colidiu = true;
@@ -619,6 +637,7 @@ int main() {
 				float pc_y = 460.0f;
 				float pc_largura = 300.0f;
 				float pc_altura = 115.0f;
+				
 				if (jogador.x < pc_x + pc_largura && jogador.x + jogador.largura > pc_x &&
 					jogador.y < pc_y + pc_altura && jogador.y + jogador.altura > pc_y) {
 					colidiu = true;
@@ -633,7 +652,7 @@ int main() {
 				float porta_x = 1180.0f;
 				float porta_y = 200.0f;
 				float porta_largura = 100.0f;
-				float porta_altura = 160.0f;
+				float porta_altura = 120.0f;
 
 				if (jogador.x < porta_x + porta_largura && jogador.x + jogador.largura > porta_x &&
 					jogador.y < porta_y + porta_altura && jogador.y + jogador.altura > porta_y) {
@@ -665,8 +684,66 @@ int main() {
 				bool colidiu_f2 = false;
 				bool movendo_f2 = (jogador.velocidade_x != 0 || jogador.velocidade_y != 0);
 
-				// TODO: Substituir pelas novas coordenadas das paredes e bancadas da Fase 2
-				if (jogador.x < 0.0f || jogador.x + jogador.largura > LARGURA_TELA || jogador.y < 0.0f || jogador.y + jogador.altura > ALTURA_TELA) {
+				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 200.0f && jogador.y + jogador.altura > 0.0f) colidiu_f2 = true;
+				if (jogador.x < 95.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 0.0f) colidiu_f2 = true;
+				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 580.0f) colidiu_f2 = true;
+				
+				if (jogador.x + jogador.largura > LARGURA_TELA) {
+					jogador.x = LARGURA_TELA - jogador.largura;
+				}
+
+				// Colisão Web
+				float web_x = 230.0f;
+				float web_y = 260.0f;
+				float web_largura = 100.0f;
+				float web_altura = 200.0f;
+
+				if (jogador.x < web_x + web_largura && jogador.x + jogador.largura > web_x &&
+					jogador.y < web_y + web_altura && jogador.y + jogador.altura > web_y) {
+					colidiu_f2 = true;
+				}
+
+				// Colisão Banco de Dados
+				float bd_x = 420.0f;
+				float bd_y = 300.0f;
+				float bd_largura = 280.0f;
+				float bd_altura = 110.0f;
+
+				if (jogador.x < bd_x + bd_largura && jogador.x + jogador.largura > bd_x &&
+					jogador.y < bd_y + bd_altura && jogador.y + jogador.altura > bd_y) {
+					colidiu_f2 = true;
+				}
+
+				// Colisão G.A
+				float ga_x = 1040.0f;
+				float ga_y = 220.0f;
+				float ga_largura = 100.0f;
+				float ga_altura = 340.0f;
+
+				if (jogador.x < ga_x + ga_largura && jogador.x + jogador.largura > ga_x &&
+					jogador.y < ga_y + ga_altura && jogador.y + jogador.altura > ga_y) {
+					colidiu_f2 = true;
+				}
+
+				// Colisão Pré-Cálculo
+				float calc_x = 380.0f;
+				float calc_y = 500.0f;
+				float calc_largura = 320.0f;
+				float calc_altura = 80.0f;
+
+				if (jogador.x < calc_x + calc_largura && jogador.x + jogador.largura > calc_x &&
+					jogador.y < calc_y + calc_altura && jogador.y + jogador.altura > calc_y) {
+					colidiu_f2 = true;
+				}
+
+				// Colisão porta de saída
+				float saida_x = 520.0f;
+				float saida_y = 0.0f;
+				float saida_largura = 100.0f;
+				float saida_altura = 120.0f;
+
+				if (jogador.x < saida_x + saida_largura && jogador.x + jogador.largura > saida_x &&
+					jogador.y < saida_y + saida_altura && jogador.y + jogador.altura > saida_y) {
 					colidiu_f2 = true;
 				}
 
@@ -715,7 +792,7 @@ int main() {
 
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, texto_hud);
 					
-					/* DEBUG */
+					/* DEBUG 
 					ALLEGRO_COLOR cor_debug = al_map_rgb(255, 0, 0); // Vermelho vivo
 					// 1. Bancada Superior
 					al_draw_rectangle(0.0f, 0.0f, 1280.0f, 200.0f, cor_debug, 2.0f);
@@ -730,10 +807,10 @@ int main() {
 					// 6. Terminal 3 (Algoritmo)
 					al_draw_rectangle(1000.0f, 460.0f, 1000.0f + 300.0f, 460.0f + 115.0f, cor_debug, 2.0f);
 					// 7. Porta 
-					al_draw_rectangle(1180.0f, 200.0f, 1180.0f + 100.0f, 200.0f + 160.0f, cor_debug, 2.0f);
+					al_draw_rectangle(1180.0f, 200.0f, 1180.0f + 100.0f, 200.0f + 120.0f, cor_debug, 2.0f);
 					// 8. Caixa do Jogador (Verde)
 					al_draw_rectangle(jogador.x, jogador.y, jogador.x + jogador.largura, jogador.y + jogador.altura, al_map_rgb(0, 255, 0), 2.0f);
-					
+					*/
 
 					float brilho = (float)(sin(al_get_time() * 6.0) + 1.0) * 0.5f; 
 					ALLEGRO_COLOR cor_alerta = al_map_rgb(255, (int)(255 * brilho), 0); 
@@ -756,6 +833,7 @@ int main() {
 						al_draw_text(fonte, cor_alerta, 1000.0f + (300.0f / 2.0f), 432.0f, ALLEGRO_ALIGN_CENTRE, "[ ALGORITMO ]");
 					}
 
+					// Se os 3 enigmas estiverem resolvidos
 					if (alu.resolvido && reg.resolvido && alg.resolvido) {
 						float brilho_porta = (float)(sin(al_get_time() * 6.0) + 1.0) * 0.5f;
 						ALLEGRO_COLOR cor_porta = al_map_rgb(0, (int)(255 * brilho_porta), 255);
@@ -807,6 +885,27 @@ int main() {
 
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, texto_hud_f2);
 
+					/* DEBUG FASE 2*/
+					ALLEGRO_COLOR cor_debug = al_map_rgb(255, 0, 0); // Vermelho vivo
+					// 1. Bancada Superior
+					al_draw_rectangle(0.0f, 0.0f, 1280.0f, 200.0f, cor_debug, 2.0f);
+					// 2. Bancada Lateral Esquerda
+					al_draw_rectangle(0.0f, 0.0f, 95.0f, 720.0f, cor_debug, 2.0f);
+					// 3. Bancada Inferior
+					al_draw_rectangle(0.0f, 580.0f, 1280.0f, 720.0f, cor_debug, 2.0f);
+					// 4. Web
+					al_draw_rectangle(230.0f, 260.0f, 180.0f + 100.0f, 260.0f + 200.0f, cor_debug, 2.0f);
+					// 5. banco de dados
+					al_draw_rectangle(420.0f, 300.0f, 420.0f + 280.0f, 300.0f + 110.0f, cor_debug, 2.0f);
+					// 6. G.A
+					al_draw_rectangle(1040.0f, 220.0f, 1040.0f + 100.0f, 220.0f + 340.0f, cor_debug, 2.0f);
+					// 7. pré-cálculo
+					al_draw_rectangle(380.0f, 500.0f, 380.0f + 320.0f, 500.0f + 80.0f, cor_debug, 2.0f);
+					// 8. Porta de Saída
+					al_draw_rectangle(520.0f, 0.0f, 520.0f + 100.0f, 0.0f + 120.0f, cor_debug, 2.0f);
+					// 9. Caixa do Jogador (Verde)
+					al_draw_rectangle(jogador.x, jogador.y, jogador.x + jogador.largura, jogador.y + jogador.altura, al_map_rgb(0, 255, 0), 2.0f);
+					
 					float sx_f2 = jogador.frame_atual * jogador.tamanho_frame;
 					float sy_f2 = jogador.direcao * jogador.tamanho_frame;
 					al_draw_scaled_bitmap(jogador.spritesheet, sx_f2, sy_f2, jogador.tamanho_frame, jogador.tamanho_frame, jogador.x, jogador.y, jogador.largura, jogador.altura, 0);
@@ -969,8 +1068,8 @@ int main() {
 		}
 	}
 
-	al_destroy_bitmap(mapa_fase1);
-	al_destroy_bitmap(mapa_fase2);
+	if (mapa_fase1 != NULL) al_destroy_bitmap(mapa_fase1);
+	if (mapa_fase1 != NULL) al_destroy_bitmap(mapa_fase2);
 	al_destroy_bitmap(jogador.spritesheet);
 	al_destroy_font(fonte);
 	al_destroy_event_queue(fila_eventos);
