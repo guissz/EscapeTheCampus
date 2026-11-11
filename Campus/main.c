@@ -685,7 +685,7 @@ int main() {
 				bool movendo_f2 = (jogador.velocidade_x != 0 || jogador.velocidade_y != 0);
 
 				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 200.0f && jogador.y + jogador.altura > 0.0f) colidiu_f2 = true;
-				if (jogador.x < 95.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 0.0f) colidiu_f2 = true;
+				if (jogador.x < 55.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 0.0f) colidiu_f2 = true;
 				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 580.0f) colidiu_f2 = true;
 				
 				if (jogador.x + jogador.largura > LARGURA_TELA) {
@@ -693,9 +693,9 @@ int main() {
 				}
 
 				// Colisão Web
-				float web_x = 230.0f;
+				float web_x = 245.0f;
 				float web_y = 260.0f;
-				float web_largura = 100.0f;
+				float web_largura = 160.0f;
 				float web_altura = 200.0f;
 
 				if (jogador.x < web_x + web_largura && jogador.x + jogador.largura > web_x &&
@@ -704,9 +704,9 @@ int main() {
 				}
 
 				// Colisão Banco de Dados
-				float bd_x = 420.0f;
+				float bd_x = 512.0f;
 				float bd_y = 300.0f;
-				float bd_largura = 280.0f;
+				float bd_largura = 630.0f;
 				float bd_altura = 110.0f;
 
 				if (jogador.x < bd_x + bd_largura && jogador.x + jogador.largura > bd_x &&
@@ -838,7 +838,7 @@ int main() {
 						float brilho_porta = (float)(sin(al_get_time() * 6.0) + 1.0) * 0.5f;
 						ALLEGRO_COLOR cor_porta = al_map_rgb(0, (int)(255 * brilho_porta), 255);
 						al_draw_rectangle(1180.0f, 200.0f, 1180.0f + 100.0f, 200.0f + 160.0f, cor_porta, 3.0f);
-						al_draw_text(fonte, cor_porta, 1180.0f + (100.0f / 2.0f), 172.0f, ALLEGRO_ALIGN_CENTRE, "[ SAIDA ]");
+						al_draw_text(fonte, cor_porta, 1180.0f + (100.0f / 2.0f), 172.0f, ALLEGRO_ALIGN_CENTRE, "[ FASE 2 ]");
 					}
 
 					float sx = jogador.frame_atual * jogador.tamanho_frame;
@@ -886,17 +886,17 @@ int main() {
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, texto_hud_f2);
 
 					/* DEBUG FASE 2*/
-					ALLEGRO_COLOR cor_debug = al_map_rgb(255, 0, 0); // Vermelho vivo
+					ALLEGRO_COLOR cor_debug = al_map_rgb(255, 0, 0);
 					// 1. Bancada Superior
 					al_draw_rectangle(0.0f, 0.0f, 1280.0f, 200.0f, cor_debug, 2.0f);
 					// 2. Bancada Lateral Esquerda
-					al_draw_rectangle(0.0f, 0.0f, 95.0f, 720.0f, cor_debug, 2.0f);
+					al_draw_rectangle(0.0f, 0.0f, 55.0f, 720.0f, cor_debug, 2.0f);
 					// 3. Bancada Inferior
 					al_draw_rectangle(0.0f, 580.0f, 1280.0f, 720.0f, cor_debug, 2.0f);
 					// 4. Web
-					al_draw_rectangle(230.0f, 260.0f, 180.0f + 100.0f, 260.0f + 200.0f, cor_debug, 2.0f);
+					al_draw_rectangle(245.0f, 260.0f, 180.0f + 160.0f, 260.0f + 200.0f, cor_debug, 2.0f);
 					// 5. banco de dados
-					al_draw_rectangle(420.0f, 300.0f, 420.0f + 280.0f, 300.0f + 110.0f, cor_debug, 2.0f);
+					al_draw_rectangle(512.0f, 300.0f, 630.0f + 280.0f, 300.0f + 110.0f, cor_debug, 2.0f);
 					// 6. G.A
 					al_draw_rectangle(1040.0f, 220.0f, 1040.0f + 100.0f, 220.0f + 340.0f, cor_debug, 2.0f);
 					// 7. pré-cálculo
