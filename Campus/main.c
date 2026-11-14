@@ -875,7 +875,7 @@ int main() {
 
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, texto_hud_f2);
 
-					/* DEBUG FASE 2 CORRIGIDO */
+					/* DEBUG FASE 2 CORRIGIDO 
 					ALLEGRO_COLOR cor_debug = al_map_rgb(255, 0, 0);
 					// 1. Bancada Superior
 					al_draw_rectangle(0.0f, 0.0f, 1280.0f, 148.0f, cor_debug, 2.0f);
@@ -883,7 +883,7 @@ int main() {
 					al_draw_rectangle(0.0f, 0.0f, 55.0f, 720.0f, cor_debug, 2.0f);
 					// 3. Bancada Inferior RESOLVIDO
 					al_draw_rectangle(0.0f, 675.0f, 1280.0f, 720.0f, cor_debug, 2.0f);
-					// 4. Bancada Direita
+					// 4. Bancada Direita RESOLVIDO
 					al_draw_rectangle(1225.0f, 498.0f, 1280.0f, 720.0f, cor_debug, 2.0f);
 					// 5. Web (245, 260, 50, 200) RESOLVIDO
 					al_draw_rectangle(245.0f, 260.0f, 245.0f + 90.0f, 260.0f + 200.0f, cor_debug, 2.0f);
@@ -898,7 +898,8 @@ int main() {
 					
 					// 10. Caixa do Jogador (Verde)
 					al_draw_rectangle(jogador.x, jogador.y, jogador.x + jogador.largura, jogador.y + jogador.altura, al_map_rgb(0, 255, 0), 2.0f);
-					
+					*/
+
 					float sx_f2 = jogador.frame_atual * jogador.tamanho_frame;
 					float sy_f2 = jogador.direcao * jogador.tamanho_frame;
 					al_draw_scaled_bitmap(jogador.spritesheet, sx_f2, sy_f2, jogador.tamanho_frame, jogador.tamanho_frame, jogador.x, jogador.y, jogador.largura, jogador.altura, 0);
