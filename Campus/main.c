@@ -605,7 +605,7 @@ int main() {
 				bool colidiu = false;
 				bool movendo = (jogador.velocidade_x != 0 || jogador.velocidade_y != 0);
 
-				// Colisão bancadas e ALU
+				// Colisão bancadas
 				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 200.0f && jogador.y + jogador.altura > 0.0f) colidiu = true;
 				if (jogador.x < 110.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 0.0f) colidiu = true;
 				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 560.0f) colidiu = true;
@@ -684,10 +684,11 @@ int main() {
 				bool colidiu_f2 = false;
 				bool movendo_f2 = (jogador.velocidade_x != 0 || jogador.velocidade_y != 0);
 
-				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 200.0f && jogador.y + jogador.altura > 0.0f) colidiu_f2 = true;
-				if (jogador.x < 55.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 0.0f) colidiu_f2 = true;
-				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 580.0f) colidiu_f2 = true;
-				
+				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 148.0f && jogador.y + jogador.altura > 0.0f) colidiu_f2 = true; // CIMA
+				if (jogador.x < 55.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 0.0f) colidiu_f2 = true; // ESQURDA
+				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 0.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 675.0f) colidiu_f2 = true; // BAIXO
+				if (jogador.x < 1280.0f && jogador.x + jogador.largura > 1225.0f && jogador.y < 720.0f && jogador.y + jogador.altura > 498.0f) colidiu_f2 = true; // DIREITA
+
 				if (jogador.x + jogador.largura > LARGURA_TELA) {
 					jogador.x = LARGURA_TELA - jogador.largura;
 				}
@@ -695,7 +696,7 @@ int main() {
 				// Colisão Web
 				float web_x = 245.0f;
 				float web_y = 260.0f;
-				float web_largura = 160.0f;
+				float web_largura = 90.0f;
 				float web_altura = 200.0f;
 
 				if (jogador.x < web_x + web_largura && jogador.x + jogador.largura > web_x &&
@@ -704,9 +705,9 @@ int main() {
 				}
 
 				// Colisão Banco de Dados
-				float bd_x = 512.0f;
+				float bd_x = 535.0f;
 				float bd_y = 300.0f;
-				float bd_largura = 630.0f;
+				float bd_largura = 350.0f;
 				float bd_altura = 110.0f;
 
 				if (jogador.x < bd_x + bd_largura && jogador.x + jogador.largura > bd_x &&
@@ -715,10 +716,10 @@ int main() {
 				}
 
 				// Colisão G.A
-				float ga_x = 1040.0f;
-				float ga_y = 220.0f;
+				float ga_x = 1125.0f;
+				float ga_y = 143.0f;
 				float ga_largura = 100.0f;
-				float ga_altura = 340.0f;
+				float ga_altura = 335.0f;
 
 				if (jogador.x < ga_x + ga_largura && jogador.x + jogador.largura > ga_x &&
 					jogador.y < ga_y + ga_altura && jogador.y + jogador.altura > ga_y) {
@@ -726,24 +727,13 @@ int main() {
 				}
 
 				// Colisão Pré-Cálculo
-				float calc_x = 380.0f;
-				float calc_y = 500.0f;
-				float calc_largura = 320.0f;
+				float calc_x = 510.0f;
+				float calc_y = 570.0f;
+				float calc_largura = 360.0f;
 				float calc_altura = 80.0f;
 
 				if (jogador.x < calc_x + calc_largura && jogador.x + jogador.largura > calc_x &&
 					jogador.y < calc_y + calc_altura && jogador.y + jogador.altura > calc_y) {
-					colidiu_f2 = true;
-				}
-
-				// Colisão porta de saída
-				float saida_x = 520.0f;
-				float saida_y = 0.0f;
-				float saida_largura = 100.0f;
-				float saida_altura = 120.0f;
-
-				if (jogador.x < saida_x + saida_largura && jogador.x + jogador.largura > saida_x &&
-					jogador.y < saida_y + saida_altura && jogador.y + jogador.altura > saida_y) {
 					colidiu_f2 = true;
 				}
 
@@ -885,25 +875,28 @@ int main() {
 
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTRE, texto_hud_f2);
 
-					/* DEBUG FASE 2*/
+					/* DEBUG FASE 2 CORRIGIDO */
 					ALLEGRO_COLOR cor_debug = al_map_rgb(255, 0, 0);
 					// 1. Bancada Superior
-					al_draw_rectangle(0.0f, 0.0f, 1280.0f, 200.0f, cor_debug, 2.0f);
-					// 2. Bancada Lateral Esquerda
+					al_draw_rectangle(0.0f, 0.0f, 1280.0f, 148.0f, cor_debug, 2.0f);
+					// 2. Bancada Lateral Esquerda RESOLVIDO
 					al_draw_rectangle(0.0f, 0.0f, 55.0f, 720.0f, cor_debug, 2.0f);
-					// 3. Bancada Inferior
-					al_draw_rectangle(0.0f, 580.0f, 1280.0f, 720.0f, cor_debug, 2.0f);
-					// 4. Web
-					al_draw_rectangle(245.0f, 260.0f, 180.0f + 160.0f, 260.0f + 200.0f, cor_debug, 2.0f);
-					// 5. banco de dados
-					al_draw_rectangle(512.0f, 300.0f, 630.0f + 280.0f, 300.0f + 110.0f, cor_debug, 2.0f);
-					// 6. G.A
-					al_draw_rectangle(1040.0f, 220.0f, 1040.0f + 100.0f, 220.0f + 340.0f, cor_debug, 2.0f);
-					// 7. pré-cálculo
-					al_draw_rectangle(380.0f, 500.0f, 380.0f + 320.0f, 500.0f + 80.0f, cor_debug, 2.0f);
-					// 8. Porta de Saída
-					al_draw_rectangle(520.0f, 0.0f, 520.0f + 100.0f, 0.0f + 120.0f, cor_debug, 2.0f);
-					// 9. Caixa do Jogador (Verde)
+					// 3. Bancada Inferior RESOLVIDO
+					al_draw_rectangle(0.0f, 675.0f, 1280.0f, 720.0f, cor_debug, 2.0f);
+					// 4. Bancada Direita
+					al_draw_rectangle(1225.0f, 498.0f, 1280.0f, 720.0f, cor_debug, 2.0f);
+					// 5. Web (245, 260, 50, 200) RESOLVIDO
+					al_draw_rectangle(245.0f, 260.0f, 245.0f + 90.0f, 260.0f + 200.0f, cor_debug, 2.0f);
+					// 6. Banco de Dados (512, 300, 630, 110) RESOLVIDO
+					al_draw_rectangle(535.0f, 300.0f, 535.0f + 350.0f, 300.0f + 110.0f, cor_debug, 2.0f);
+					// 7. G.A (1040, 220, 100, 340) RESOLVIDO
+					al_draw_rectangle(1125.0f, 143.0f, 1125.0f + 100.0f, 150.0f + 335.0f, cor_debug, 2.0f);
+					// 8. Pré-cálculo (380, 500, 320, 80) RESOLVIDO
+					al_draw_rectangle(510.0f, 570.0f, 510.0f + 360.0f, 570.0f + 80.0f, cor_debug, 2.0f);
+					
+					// 9. Porta de Saída (600, 30, 100, 120)
+					
+					// 10. Caixa do Jogador (Verde)
 					al_draw_rectangle(jogador.x, jogador.y, jogador.x + jogador.largura, jogador.y + jogador.altura, al_map_rgb(0, 255, 0), 2.0f);
 					
 					float sx_f2 = jogador.frame_atual * jogador.tamanho_frame;
@@ -976,7 +969,7 @@ int main() {
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 55, ALLEGRO_ALIGN_CENTRE, "COMO FUNCIONA O SISTEMA HEXADECIMAL E O OBJETIVO:");
 					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 75, ALLEGRO_ALIGN_CENTRE, "1. O sistema hexadecimal usa base 16: digitos 0-9 e letras A-F (A=10, B=11, C=12, D=13, E=14, F=15).");
 					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 95, ALLEGRO_ALIGN_CENTRE, "2. Ignore o prefixo '0x' e compare os valores da esquerda para a direita (Ex: 0x0D e menor que 0x41).");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 115, ALLEGRO_ALIGN_CENTRE, "3. OBJETIVO: Clique no primeiro registrador para selecionar (fica amarelo) e clique noutro para");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 115, ALLEGRO_ALIGN_CENTRE, "3. OBJETIVO: Clique no primeiro registrador para selecionar (fica amarelo) e clique em outro para");
 					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 135, ALLEGRO_ALIGN_CENTRE, "   troca-los de lugar, organizando os 4 blocos em ORDEM CRESCENTE (do menor para o maior).");
 
 					al_draw_text(fonte, al_map_rgb(255, 255, 0), LARGURA_TELA / 2, 175, ALLEGRO_ALIGN_CENTRE, "ORGANIZE OS REGISTRADORES ABAIXO:");
@@ -1027,7 +1020,7 @@ int main() {
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 45, ALLEGRO_ALIGN_CENTRE, "EXPLICACAO DIDATICA:");
 					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 65, ALLEGRO_ALIGN_CENTRE, "1. Em C, os vetores comecam no indice 0. As posicoes sao: 0, 1, 2, 3 e 4.");
 					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 85, ALLEGRO_ALIGN_CENTRE, "2. O vetor tem 5 elementos: {10, 20, 30, 40, 50}.");
-					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 105, ALLEGRO_ALIGN_CENTRE, "3. Para visitar todos sem falhar nenhum, 'i' deve ir de 0 ate 4 (5 voltas no total).");
+					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 105, ALLEGRO_ALIGN_CENTRE, "3. Para passar por todos sem falhar nenhum, 'i' deve ir de 0 ate 4 (5 voltas no total).");
 					al_draw_text(fonte, al_map_rgb(255, 255, 0), LARGURA_TELA / 2, 125, ALLEGRO_ALIGN_CENTRE, "OBJETIVO: Preencha o espaco (___) com o numero total de iteracoes (5).");
 					al_draw_text(fonte, al_map_rgb(100, 255, 100), LARGURA_TELA / 2, 155, ALLEGRO_ALIGN_CENTRE, alg.codigo_linha1);
 					al_draw_text(fonte, al_map_rgb(100, 255, 100), LARGURA_TELA / 2, 175, ALLEGRO_ALIGN_CENTRE, alg.codigo_linha2);
@@ -1057,7 +1050,7 @@ int main() {
 						}
 					}
 
-					al_draw_text(fonte, al_map_rgb(180, 180, 180), LARGURA_TELA / 2, 320, ALLEGRO_ALIGN_CENTRE, "Prima ENTER para confirmar a resposta");
+					al_draw_text(fonte, al_map_rgb(180, 180, 180), LARGURA_TELA / 2, 320, ALLEGRO_ALIGN_CENTRE, "Aperte ENTER para confirmar a resposta");
 					break;
 
 				default:
