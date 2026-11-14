@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
@@ -71,6 +72,19 @@ typedef struct {
 	bool acertou;
 } EnigmaAlgoritmo;
 
+typedef struct {
+	int codigos[3];                  
+	char descricoes[3][64];          
+	int conexoes[3];          
+	int selecionado_codigo;
+	int tentativa_atual;
+	int tempo_erro;
+	int tempo_acerto;
+	bool resolvido;
+	bool erro;
+	bool acertou;
+} EnigmaWeb;
+
 // MÁQUINA DE ESTADO
 typedef enum { 
 	ESTADO_MENU, 
@@ -79,6 +93,7 @@ typedef enum {
 	ESTADO_ENIGMA1, 
 	ESTADO_ENIGMA2, 
 	ESTADO_ENIGMA3, 
+	ESTADO_ENIGMA4,
 	ESTADO_SAIR 
 } Estado;
 
@@ -136,6 +151,28 @@ void gerar_algoritmo(EnigmaAlgoritmo *alg) {
 	alg->tempo_erro = 0;
 	alg->acertou = false;
 	alg->tempo_acerto = 0;
+}
+
+void gerar_enigma_web(EnigmaWeb *web) {
+	web->codigos[0] = 200;
+	web->codigos[1] = 404;
+	web->codigos[2] = 500;
+
+	sprintf_s(web->descricoes[0], sizeof(web->descricoes[0]), "200 - OK (Sucesso na requisicao)");
+	sprintf_s(web->descricoes[1], sizeof(web->descricoes[1]), "404 - Not Found (Recurso nao encontrado)");
+	sprintf_s(web->descricoes[2], sizeof(web->descricoes[2]), "500 - Internal Server Error (Erro no servidor)");
+
+	for (int i = 0; i < 3; i++) {
+		web->conexoes[i] = -1; 
+	}
+
+	web->selecionado_codigo = -1;
+	web->tentativa_atual = 0;
+	web->resolvido = false;
+	web->erro = false;
+	web->tempo_erro = 0;
+	web->acertou = false;
+	web->tempo_acerto = 0;
 }
 
 int main() {
@@ -202,6 +239,10 @@ int main() {
 	EnigmaAlgoritmo alg;
 	gerar_algoritmo(&alg);
 
+	// INICIALIZAÇÃO DO ENIGMA 4 (WEB)
+	EnigmaWeb web;
+	gerar_enigma_web(&web);
+
 	// INICIALIZAÇÃO DO TEMPORIZADOR
 	static int contador_tempo = 0;
 	al_start_timer(timer);
@@ -254,7 +295,7 @@ int main() {
 					jogador.direcao = 3;
 				}
 
-				// INTERAÇÕES
+				// INTERAÇÕES FASE 1
 				if (estado_atual == ESTADO_FASE1 && evento.keyboard.keycode == ALLEGRO_KEY_E) {
 					// Interação com a ALU
 					float margem = 20.0f;
@@ -283,14 +324,8 @@ int main() {
 						jogador.x + jogador.largura > alocador_x - margem_alocador &&
 						jogador.y < alocador_y + alocador_altura + margem_alocador &&
 						jogador.y + jogador.altura > alocador_y - margem_alocador);
-					/*
-					if (perto_do_alocador) {
-						printf("Perto do alocador! Resolvido: %d\n", reg.resolvido);
-					}
-					*/
 
 					if (perto_do_alocador && !reg.resolvido) {
-						//printf("A abrir o enigma 2...\n");
 						gerar_registradores(&reg);
 						estado_atual = ESTADO_ENIGMA2;
 						redesenhar = true;
@@ -311,12 +346,12 @@ int main() {
 						redesenhar = true;
 					}
 
-					// Interação com a porta
+					// Interação com a porta para a Fase 2
 					bool perto_porta = (alu.resolvido && reg.resolvido && alg.resolvido) &&
 						(jogador.x < 1180.0f + 100.0f + 25.0f && jogador.x + jogador.largura > 1180.0f - 25.0f &&
 							jogador.y < 200.0f + 160.0f + 25.0f && jogador.y + jogador.altura > 200.0f - 25.0f);
 
-					if (perto_porta && evento.keyboard.keycode == ALLEGRO_KEY_E) {
+					if (perto_porta) {
 						if (mapa_fase1 != NULL) {
 							al_destroy_bitmap(mapa_fase1);
 							mapa_fase1 = NULL;
@@ -324,18 +359,38 @@ int main() {
 
 						// Inicialização do mapa 2
 						mapa_fase2 = al_load_bitmap("mapa_fase2.jpg");
-						
+
 						estado_atual = ESTADO_FASE2;
-						jogador.x = 130.0f; 
+						jogador.x = 130.0f;
 						jogador.y = 300.0f;
 						hud.fase_atual = 2;
 						hud.enigmas_resolvidos = 0;
-						hud.total_enigmas = 4; 
+						hud.total_enigmas = 4;
 					}
 				}
 
+				// INTERAÇÕES FASE 2
 				else if (estado_atual == ESTADO_FASE2 && evento.keyboard.keycode == ALLEGRO_KEY_E) {
+					printf("[DEBUG] Tecla [E] pressionada na Fase 2!\n");
+					float margem = 50.0f;
 
+					bool perto_web = !web.resolvido && (
+						jogador.x < 245.0f + 90.0f + margem &&
+						jogador.x + jogador.largura > 245.0f - margem &&
+						jogador.y < 260.0f + 200.0f + margem &&
+						jogador.y + jogador.altura > 260.0f - margem
+						);
+
+
+					printf("[DEBUG] perto_web = %d (Jogador X: %.1f, Y: %.1f)\n", perto_web, jogador.x, jogador.y);
+					if (perto_web) {
+						printf("[DEBUG] ESTADO_ENIGMA4 aberto com sucesso!\n");
+						gerar_enigma_web(&web);
+						estado_atual = ESTADO_ENIGMA4;
+						redesenhar = true;
+					} else {
+						printf("[DEBUG] A tecla foi pressionada, mas o jogador esta fora do alcance\n");
+					}
 				}
 			}
 		}
@@ -409,7 +464,7 @@ int main() {
 		else if (evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
 			float mouse_x = evento.mouse.x;
 			float mouse_y = evento.mouse.y;
-			
+
 			// Lógica Enigma 1
 			if (estado_atual == ESTADO_ENIGMA1) {
 				float x_inicio = LARGURA_TELA / 2 - 220;
@@ -528,6 +583,74 @@ int main() {
 					redesenhar = true;
 				}
 			}
+
+			// Lógica Enigma 4
+			else if (estado_atual == ESTADO_ENIGMA4) {
+				float x_codigos = 200.0f;
+				float y_codigos = 250.0f;
+				float largura_botao = 120.0f;
+				float altura_botao = 60.0f;
+				float espacamento = 90.0f;
+
+				for (int i = 0; i < 3; i++) {
+					float y_posicao = y_codigos + (i * espacamento);
+					if (mouse_x >= x_codigos && mouse_x <= x_codigos + largura_botao && mouse_y >= y_posicao && mouse_y <= y_posicao + altura_botao) {
+						web.selecionado_codigo = i;
+						redesenhar = true;
+						break;
+					}
+				}
+
+				float x_descricao = 700.0f;
+				float y_descricao = 250.0f;
+				float largura_descricao = 380.0f;
+
+				for (int j = 0; j < 3; j++) {
+					float y_pos = y_descricao + (j * espacamento);
+					if (mouse_x >= x_descricao && mouse_x <= x_descricao + largura_descricao && mouse_y >= y_pos && mouse_y <= y_pos + altura_botao) {
+						if (web.selecionado_codigo != -1) {
+							web.conexoes[web.selecionado_codigo] = j;
+							web.selecionado_codigo = -1;
+							redesenhar = true;
+						}
+						break;
+					}
+
+				}
+
+				float botao_x = LARGURA_TELA / 2 - 100;
+				float botao_y = 550;
+				float botao_largura = 200;
+				float botao_altura = 50;
+
+				if (mouse_x >= botao_x && mouse_x <= botao_x + botao_largura && mouse_y >= botao_y && mouse_y <= botao_y + botao_altura) {
+					bool correto = true;
+					for (int i = 0; i < 3; i++) {
+						if (web.conexoes[i] != i) {
+							correto = false;
+							break;
+						}
+					}
+
+					if (correto) {
+						hud.enigmas_resolvidos++;
+						if (web.tentativa_atual == 0) {
+							hud.pontuacao += 1000;
+						}
+						web.resolvido = true;
+						web.acertou = true;
+						web.tempo_acerto = 90;
+					}
+					else {
+						hud.pontuacao -= 500;
+						if (hud.pontuacao < 0) hud.pontuacao = 0;
+						web.tentativa_atual = 1;
+						web.erro = true;
+						web.tempo_erro = 120;
+					}
+					redesenhar = true;
+				}
+			}
 		}
 
 		else if (evento.type == ALLEGRO_EVENT_TIMER) {
@@ -594,6 +717,21 @@ int main() {
 				alg.tempo_erro--;
 				if (alg.tempo_erro <= 0) {
 					alg.erro = false;
+				}
+			}
+
+			if (estado_atual == ESTADO_ENIGMA4 && web.acertou) {
+				web.tempo_acerto--;
+				if (web.tempo_acerto <= 0) {
+					web.acertou = false;
+					estado_atual = ESTADO_FASE2;
+				}
+			}
+
+			if (estado_atual == ESTADO_ENIGMA4 && web.erro) {
+				web.tempo_erro--;
+				if (web.tempo_erro <= 0) {
+					web.erro = false;
 				}
 			}
 
@@ -900,6 +1038,18 @@ int main() {
 					al_draw_rectangle(jogador.x, jogador.y, jogador.x + jogador.largura, jogador.y + jogador.altura, al_map_rgb(0, 255, 0), 2.0f);
 					*/
 
+					/*
+					float brilho = (float)(sin(al_get_time() * 6.0) + 1.0) * 0.5f;
+					ALLEGRO_COLOR cor_alerta = al_map_rgb(255, (int)(255 * brilho), 0);
+
+					
+					// Se o Enigma 4 (Web) não estiver resolvido
+					if (!alu.resolvido) {
+						al_draw_rectangle(240.0f, 260.0f, 240.0f + 90.0f, 250.0f + 200.0f, cor_alerta, 3.0f);
+						al_draw_text(fonte, cor_alerta, 400.0f + (385.0f / 2.0f), 290.0f, ALLEGRO_ALIGN_CENTRE, "[ WEB ]");
+					}
+					*/
+
 					float sx_f2 = jogador.frame_atual * jogador.tamanho_frame;
 					float sy_f2 = jogador.direcao * jogador.tamanho_frame;
 					al_draw_scaled_bitmap(jogador.spritesheet, sx_f2, sy_f2, jogador.tamanho_frame, jogador.tamanho_frame, jogador.x, jogador.y, jogador.largura, jogador.altura, 0);
@@ -1053,6 +1203,59 @@ int main() {
 
 					al_draw_text(fonte, al_map_rgb(180, 180, 180), LARGURA_TELA / 2, 320, ALLEGRO_ALIGN_CENTRE, "Aperte ENTER para confirmar a resposta");
 					break;
+
+				case ESTADO_ENIGMA4:
+					al_clear_to_color(al_map_rgb(20, 20, 35));
+
+					al_draw_text(fonte, al_map_rgb(0, 255, 255), LARGURA_TELA / 2, 50, ALLEGRO_ALIGN_CENTRE, "--- INSPECAO HTTP: LIGUE OS CABOS VIRTUAIS ---");
+
+					// Desenha os botões dos códigos HTTP (Esquerda)
+					for (int i = 0; i < 3; i++) {
+						float y_pos = 250.0f + (i * 90.0f);
+						ALLEGRO_COLOR cor_caixa = (web.selecionado_codigo == i) ? al_map_rgb(0, 255, 255) : al_map_rgb(50, 50, 80);
+
+						al_draw_filled_rectangle(200.0f, y_pos, 320.0f, y_pos + 60.0f, cor_caixa);
+						al_draw_rectangle(200.0f, y_pos, 320.0f, y_pos + 60.0f, al_map_rgb(255, 255, 255), 2.0f);
+
+						char texto_codigo[16];
+						sprintf_s(texto_codigo, sizeof(texto_codigo), "%d", web.codigos[i]);
+						al_draw_text(fonte, al_map_rgb(255, 255, 255), 260.0f, y_pos + 20.0f, ALLEGRO_ALIGN_CENTRE, texto_codigo);
+					}
+
+					// Desenha os blocos das descrições (Direita)
+					for (int j = 0; j < 3; j++) {
+						float y_pos = 250.0f + (j * 90.0f);
+						al_draw_filled_rectangle(700.0f, y_pos, 1080.0f, y_pos + 60.0f, al_map_rgb(50, 50, 80));
+						al_draw_rectangle(700.0f, y_pos, 1080.0f, y_pos + 60.0f, al_map_rgb(255, 255, 255), 2.0f);
+
+						al_draw_text(fonte, al_map_rgb(255, 255, 255), 710.0f, y_pos + 20.0f, 0, web.descricoes[j]);
+					}
+
+					// Desenha os cabos virtuais já conectados
+					for (int i = 0; i < 3; i++) {
+						if (web.conexoes[i] != -1) {
+							float y_origem = 250.0f + (i * 90.0f) + 30.0f;
+							float y_destino = 250.0f + (web.conexoes[i] * 90.0f) + 30.0f;
+							al_draw_line(320.0f, y_origem, 700.0f, y_destino, al_map_rgb(0, 255, 0), 4.0f);
+						}
+					}
+
+					// Botão Confirmar
+					al_draw_filled_rectangle(LARGURA_TELA / 2 - 100, 550, LARGURA_TELA / 2 + 100, 600, al_map_rgb(0, 150, 100));
+					al_draw_rectangle(LARGURA_TELA / 2 - 100, 550, LARGURA_TELA / 2 + 100, 600, al_map_rgb(255, 255, 255), 2.0f);
+					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 565, ALLEGRO_ALIGN_CENTRE, "CONFIRMAR");
+
+					if (web.erro) {
+						al_draw_text(fonte, al_map_rgb(255, 0, 0), LARGURA_TELA / 2, 630, ALLEGRO_ALIGN_CENTRE, "RESPOSTA INCORRETA! Tente novamente (-500 pontos)");
+					}
+					if (web.acertou) {
+						if (alg.tentativa_atual == 0) {
+							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 280, ALLEGRO_ALIGN_CENTRE, "CORRETO! +1000 pontos de primeira!");
+						}
+						else {
+							al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2, 280, ALLEGRO_ALIGN_CENTRE, "CORRETO!");
+						}
+					}
 
 				default:
 					break;
