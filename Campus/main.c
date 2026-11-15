@@ -1238,8 +1238,6 @@ int main() {
 
 				case ESTADO_ENIGMA4:
 					al_clear_to_color(al_map_rgb(20, 20, 35));
-
-					// Instruções e Dicas no Topo
 					al_draw_text(fonte, al_map_rgb(0, 255, 255), LARGURA_TELA / 2, 20, ALLEGRO_ALIGN_CENTER, "INSPECAO HTTP - LIGUE OS CODIGOS AOS SEUS SIGNIFICADOS");
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 50, ALLEGRO_ALIGN_CENTER, "COMO FUNCIONA O PROTOCOLO HTTP:");
 					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 70, ALLEGRO_ALIGN_CENTER, "1. Codigos 2xx indicam Sucesso.");
@@ -1247,7 +1245,6 @@ int main() {
 					al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2, 110, ALLEGRO_ALIGN_CENTER, "3. Codigos 5xx indicam Erro no Servidor.");
 					al_draw_text(fonte, al_map_rgb(255, 255, 0), LARGURA_TELA / 2, 135, ALLEGRO_ALIGN_CENTER, "OBJETIVO: Clique no codigo a esquerda e depois na descricao correspondente.");
 
-					// Desenha os botões dos códigos HTTP (Esquerda)
 					for (int i = 0; i < 3; i++) {
 						float y_pos = 180.0f + (i * 90.0f);
 						ALLEGRO_COLOR cor_caixa = (web.selecionado_codigo == i) ? al_map_rgb(0, 255, 255) : al_map_rgb(50, 50, 80);
@@ -1260,7 +1257,6 @@ int main() {
 						al_draw_text(fonte, al_map_rgb(255, 255, 255), 260.0f, y_pos + 20.0f, ALLEGRO_ALIGN_CENTER, texto_codigo);
 					}
 
-					// Desenha os blocos das descrições (Direita)
 					for (int j = 0; j < 3; j++) {
 						float y_pos = 180.0f + (j * 90.0f);
 						al_draw_filled_rectangle(700.0f, y_pos, 1080.0f, y_pos + 60.0f, al_map_rgb(50, 50, 80));
@@ -1269,7 +1265,6 @@ int main() {
 						al_draw_text(fonte, al_map_rgb(255, 255, 255), 710.0f, y_pos + 20.0f, 0, web.descricoes[j]);
 					}
 
-					// Desenha os cabos virtuais já conectados
 					for (int i = 0; i < 3; i++) {
 						if (web.conexoes[i] != -1) {
 							float y_origem = 180.0f + (i * 90.0f) + 30.0f;
@@ -1278,12 +1273,10 @@ int main() {
 						}
 					}
 
-					// Botão Confirmar
 					al_draw_filled_rectangle(LARGURA_TELA / 2 - 100, 500, LARGURA_TELA / 2 + 100, 550, al_map_rgb(0, 150, 100));
 					al_draw_rectangle(LARGURA_TELA / 2 - 100, 500, LARGURA_TELA / 2 + 100, 550, al_map_rgb(255, 255, 255), 2.0f);
 					al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2, 515, ALLEGRO_ALIGN_CENTER, "CONFIRMAR");
 
-					// Mensagens de feedback
 					if (web.erro) {
 						al_draw_text(fonte, al_map_rgb(255, 0, 0), LARGURA_TELA / 2, 580, ALLEGRO_ALIGN_CENTER, "RESPOSTA INCORRETA! Tente novamente (-500 pontos)");
 					}
