@@ -105,6 +105,24 @@ typedef struct {
 	bool acertou;
 } EnigmaBD;
 
+// Enigma 6
+typedef struct {
+	int a;
+	int b;
+	int c;
+	int x_vertice; // ponto mínimo em X (-b / (2*a))
+	int y_minimo; // valor mínimo de f(x_vertice)
+	int x_ponteiro; // posição atual do cursor no eixo X
+	int x_min; // limite esquerdo do eixo X
+	int x_max; // limite direito do eixo X
+	int tentativa_atual;
+	int tempo_erro;
+	int tempo_acerto;
+	bool resolvido;
+	bool erro;
+	bool acertou;
+} EnigmaCalculo;
+
 // MÁQUINA DE ESTADO
 typedef enum { 
 	ESTADO_MENU, 
@@ -115,6 +133,7 @@ typedef enum {
 	ESTADO_ENIGMA3, 
 	ESTADO_ENIGMA4,
 	ESTADO_ENIGMA5,
+	ESTADO_ENIGMA6,
 	ESTADO_SAIR 
 } Estado;
 
@@ -246,6 +265,43 @@ void gerar_banco_dados(EnigmaBD *bd) {
 	bd->tempo_acerto = 0;
 }
 
+int avaliar_enigma_calculo(const EnigmaCalculo *e, int x) {
+	return e->a * (x * x) + e->b * x + e->c;
+}
+
+void gerar_enigma_calculo(EnigmaCalculo* e) {
+	const int catalogo[][5] = {
+		{ 1, -4,  5,  2, 1 }, // x² - 4x + 5 -> minimo em x = 2
+		{ 1, -6, 11,  3, 2 }, // x² - 6x + 11 -> minimo em x = 3
+		{ 1,  2,  3, -1, 2 }, // x² + 2x + 3 -> minimo em x = -1
+		{ 2, -8,  9,  2, 1 }, // 2x² - 8x + 9 -> minimo em x = 2
+		{ 1, -2,  4,  1, 3 }  // x² - 2x + 4 -> minimo em x = 1
+	};
+
+	int total_funcoes = (int)(sizeof(catalogo) / sizeof(catalogo[0]));
+	int idx = rand() % total_funcoes;
+
+	e->a = catalogo[idx][0];
+	e->b = catalogo[idx][1];
+	e->c = catalogo[idx][2];
+	e->x_vertice = catalogo[idx][3];
+	e->y_minimo = catalogo[idx][4];
+
+	e->x_min = -5;
+	e->x_max = 5;
+
+	e->tentativa_atual = 0;
+	e->tempo_erro = 0;
+	e->tempo_acerto = 0;
+	e->resolvido = false;
+	e->erro = false;
+	e->acertou = false;
+
+	do {
+		e->x_ponteiro = e->x_min + (rand() % (e->x_max - e->x_min + 1));
+	} while (e->x_ponteiro == e->x_vertice);
+}
+
 int main() {
 
 	// INICIALIZAÇÃO DO ALLEGRO
@@ -256,6 +312,8 @@ int main() {
 	al_install_mouse();
 	al_init_primitives_addon();
 	al_init_image_addon();
+
+	//al_set_new_bitmap_format(ALLEGRO_PIXEL_FORMAT_ARGB_4444);
 
 	ALLEGRO_DISPLAY *display = al_create_display(LARGURA_TELA, ALTURA_TELA);
 	al_set_window_title(display, "Escape The Campus - Base");
@@ -314,9 +372,13 @@ int main() {
 	EnigmaWeb web;
 	gerar_enigma_web(&web);
 
-	// INICIALIZAÇÃO DO ENIGMA BANCO DE DADOS
+	// INICIALIZAÇÃO DO ENIGMA 5 (BANCO DE DADOS)
 	EnigmaBD bd;
 	gerar_banco_dados(&bd);
+
+	// INICIALIZAÇÃO DO ENIGMA 6 (CÁLCULO)
+	EnigmaCalculo e;
+	gerar_enigma_calculo(&e);
 
 	// INICIALIZAÇÃO DO TEMPORIZADOR
 	static int contador_tempo = 0;
@@ -338,7 +400,7 @@ int main() {
 				if (estado_atual == ESTADO_ENIGMA1 || estado_atual == ESTADO_ENIGMA2 || estado_atual == ESTADO_ENIGMA3) {
 					estado_atual = ESTADO_FASE1;
 				} 
-				else if (estado_atual == ESTADO_ENIGMA4 || estado_atual == ESTADO_ENIGMA5) {
+				else if (estado_atual == ESTADO_ENIGMA4 || estado_atual == ESTADO_ENIGMA5 || estado_atual == ESTADO_ENIGMA6) {
 					estado_atual = ESTADO_FASE2;
 				} else {
 					rodando = false;
@@ -476,6 +538,55 @@ int main() {
 						estado_atual = ESTADO_ENIGMA5;
 						redesenhar = true;
 					}
+
+					bool perto_calc = !e.resolvido && (
+						jogador.x < 510.0f + 360.0f + margem &&
+						jogador.x + jogador.largura > 510.0f - margem &&
+						jogador.y < 570.0f + 80.0f + margem &&
+						jogador.y + jogador.altura > 570.0f - margem
+						);
+
+					if (perto_calc) {
+						gerar_enigma_calculo(&e);
+						estado_atual = ESTADO_ENIGMA6;
+						redesenhar = true;
+					}
+				}
+			}
+
+			if (estado_atual == ESTADO_ENIGMA6 && !e.resolvido && !e.acertou) {
+				if (evento.keyboard.keycode == ALLEGRO_KEY_LEFT || evento.keyboard.keycode == ALLEGRO_KEY_A) {
+					if (e.x_ponteiro > e.x_min) {
+						e.x_ponteiro--;
+						e.erro = false;
+						redesenhar = true;
+					}
+				}
+				else if (evento.keyboard.keycode == ALLEGRO_KEY_RIGHT || evento.keyboard.keycode == ALLEGRO_KEY_D) {
+					if (e.x_ponteiro < e.x_max) {
+						e.x_ponteiro++;
+						e.erro = false;
+						redesenhar = true;
+					}
+				}
+				else if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER || evento.keyboard.keycode == ALLEGRO_KEY_PAD_ENTER) {
+					if (e.x_ponteiro == e.x_vertice) {
+						hud.enigmas_resolvidos++;
+						if (e.tentativa_atual == 0) {
+							hud.pontuacao += 1000;
+						}
+						e.resolvido = true;
+						e.acertou = true;
+						e.tempo_acerto = 90;
+					}
+					else {
+						hud.pontuacao -= 500;
+						if (hud.pontuacao < 0) hud.pontuacao = 0;
+						e.tentativa_atual = 1;
+						e.erro = true;
+						e.tempo_erro = 120;
+					}
+					redesenhar = true;
 				}
 			}
 		}
@@ -542,6 +653,8 @@ int main() {
 				}
 				redesenhar = true;
 			}
+
+
 		}
 
 		// LÓGICA DOS ENIGMAS COM MOUSE
@@ -907,6 +1020,21 @@ int main() {
 				}
 			}
 
+			if (estado_atual == ESTADO_ENIGMA6 && e.acertou) {
+				e.tempo_acerto--;
+				if (e.tempo_acerto <= 0) {
+					e.acertou = false;
+					estado_atual = ESTADO_FASE2;
+				}
+			}
+
+			if (estado_atual == ESTADO_ENIGMA6 && e.erro) {
+				e.tempo_erro--;
+				if (e.tempo_erro <= 0) {
+					e.erro = false;
+				}
+			}
+
 			// Fase 1
 			if (estado_atual == ESTADO_FASE1) {
 				jogador.x += jogador.velocidade_x;
@@ -1208,6 +1336,11 @@ int main() {
 					al_draw_text(fonte, cor_alerta_f2, 535.0f + (350.0f / 2.0f), 265.0f, ALLEGRO_ALIGN_CENTER, "[ BANCO DE DADOS ]");
 				}
 
+				// Se o Enigma 6 (Pré-Cálculo) não estiver resolvido
+				if (!e.resolvido) {
+					al_draw_rectangle(490.0f, 570.0f, 490.0f + 400.0f, 570.0f + 80.0f, cor_alerta_f2, 3.0f);
+					al_draw_text(fonte, cor_alerta_f2, 510.0f + (360.0f / 2.0f), 542.0f, ALLEGRO_ALIGN_CENTER, "[ PRE-CALCULO ]");
+				}
 
 				float sx_f2 = jogador.frame_atual * jogador.tamanho_frame;
 				float sy_f2 = jogador.direcao * jogador.tamanho_frame;
@@ -1479,6 +1612,84 @@ int main() {
 				break;
 			}
 
+			// ENIGMA 6
+			case ESTADO_ENIGMA6: {
+				al_clear_to_color(al_map_rgb(20, 25, 38));
+				al_draw_text(fonte, al_map_rgb(0, 255, 255), LARGURA_TELA / 2.0f, 20.0f, ALLEGRO_ALIGN_CENTER, "OTIMIZACAO DE SINAL - PRE-CALCULO E CALCULO 1");
+				al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2.0f, 52.0f, ALLEGRO_ALIGN_CENTER, "COMO RESOLVER:");
+				al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2.0f, 64.0f, ALLEGRO_ALIGN_CENTER, "1. Em f(x) = ax^2 + bx + c (com a > 0), a parabola tem concavidade para cima e um ponto minimo (vertice).");
+				al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2.0f, 82.0f, ALLEGRO_ALIGN_CENTER, "2. Formula do vertice: x_v = -b / (2a)  ou  pela derivada: f'(x) = 2ax + b = 0 -> x = -b / (2a).");
+				al_draw_text(fonte, al_map_rgb(200, 200, 200), LARGURA_TELA / 2.0f, 100.0f, ALLEGRO_ALIGN_CENTER, "3. Dica pratica: mova o ponteiro no eixo X e observe f(x) diminuir ate o menor valor antes de voltar a subir.");
+				al_draw_text(fonte, al_map_rgb(255, 255, 0), LARGURA_TELA / 2.0f, 118.0f, ALLEGRO_ALIGN_CENTER, "OBJETIVO: Ajuste o ponteiro de frequencia no ponto minimo da funcao e pressione ENTER.");
+
+				char texto_funcao[128];
+				sprintf_s(texto_funcao, sizeof(texto_funcao), "FUNCAO: f(x) = %dx^2 %c %dx %c %d",
+					e.a,
+					(e.b >= 0) ? '+' : '-',
+					abs(e.b),
+					(e.c >= 0) ? '+' : '-',
+					abs(e.c));
+				al_draw_text(fonte, al_map_rgb(100, 255, 150), LARGURA_TELA / 2.0f, 152.0f, ALLEGRO_ALIGN_CENTER, texto_funcao);
+
+				int fx_atual = avaliar_enigma_calculo(&e, e.x_ponteiro);
+				char texto_estado[128];
+				sprintf_s(texto_estado, sizeof(texto_estado), "PONTEIRO: x = %d   |   SINAL: f(%d) = %d", e.x_ponteiro, e.x_ponteiro, fx_atual);
+				al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA_TELA / 2.0f, 178.0f, ALLEGRO_ALIGN_CENTER, texto_estado);
+
+				float painel_x1 = 220.0f;
+				float painel_y1 = 215.0f;
+				float painel_x2 = LARGURA_TELA - 220.0f;
+				float painel_y2 = 395.0f;
+
+				al_draw_filled_rectangle(painel_x1, painel_y1, painel_x2, painel_y2, al_map_rgb(12, 16, 26));
+				al_draw_rectangle(painel_x1, painel_y1, painel_x2, painel_y2, al_map_rgb(120, 140, 170), 2.0f);
+
+				float linha_y = (painel_y1 + painel_y2) / 2.0f + 15.0f;
+				al_draw_line(painel_x1 + 40.0f, linha_y, painel_x2 - 40.0f, linha_y, al_map_rgb(90, 105, 130), 2.0f);
+
+				int qtd_passos = e.x_max - e.x_min;
+				float largura_util = (painel_x2 - painel_x1) - 80.0f;
+				float espaco_x = (qtd_passos > 0) ? (largura_util / qtd_passos) : 0.0f;
+
+				for (int x_val = e.x_min; x_val <= e.x_max; x_val++) {
+					float pos_x = (painel_x1 + 40.0f) + ((x_val - e.x_min) * espaco_x);
+					bool eh_ponteiro = (x_val == e.x_ponteiro);
+
+					ALLEGRO_COLOR cor_marcador = eh_ponteiro ? al_map_rgb(255, 200, 0) : al_map_rgb(150, 170, 200);
+					float raio = eh_ponteiro ? 10.0f : 5.0f;
+
+					al_draw_line(pos_x, linha_y - 8.0f, pos_x, linha_y + 8.0f, cor_marcador, eh_ponteiro ? 3.0f : 1.5f);
+					al_draw_filled_circle(pos_x, linha_y, raio, cor_marcador);
+
+					if (eh_ponteiro) {
+						al_draw_line(pos_x, painel_y1 + 20.0f, pos_x, linha_y - 12.0f, al_map_rgb(255, 200, 0), 2.0f);
+					}
+
+					char label_x[8];
+					sprintf_s(label_x, sizeof(label_x), "%d", x_val);
+					al_draw_text(fonte, cor_marcador, pos_x, linha_y + 18.0f, ALLEGRO_ALIGN_CENTER, label_x);
+				}
+
+				if (e.erro) {
+					al_draw_text(fonte, al_map_rgb(255, 60, 60), LARGURA_TELA / 2.0f, 430.0f, ALLEGRO_ALIGN_CENTER,
+						"RESPOSTA INCORRETA! Tente novamente (-500 pontos)");
+				}
+				if (e.acertou) {
+					if (e.tentativa_atual == 0) {
+						al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2.0f, 430.0f, ALLEGRO_ALIGN_CENTER,
+							"CORRETO! +1000 pontos de primeira!");
+					}
+					else {
+						al_draw_text(fonte, al_map_rgb(0, 255, 100), LARGURA_TELA / 2.0f, 430.0f, ALLEGRO_ALIGN_CENTER,
+							"CORRETO!");
+					}
+				}
+
+				al_draw_text(fonte, al_map_rgb(180, 180, 180), LARGURA_TELA / 2.0f, 475.0f, ALLEGRO_ALIGN_CENTER,
+					"[SETAS / A-D] Mover ponteiro   |   [ENTER] Confirmar   |   [ESC] Voltar para Fase 2");
+				break;
+			}
+
 				default:
 					break;
 			}
@@ -1488,7 +1699,7 @@ int main() {
 	}
 
 	if (mapa_fase1 != NULL) al_destroy_bitmap(mapa_fase1);
-	if (mapa_fase1 != NULL) al_destroy_bitmap(mapa_fase2);
+	if (mapa_fase2 != NULL) al_destroy_bitmap(mapa_fase2);
 	al_destroy_bitmap(jogador.spritesheet);
 	al_destroy_font(fonte);
 	al_destroy_event_queue(fila_eventos);
